@@ -31,7 +31,18 @@ Do not assume undecided parts of the stack in code or docs. When a decision is m
 
 ## Commands
 
-_None yet._ Fill in install, dev, build, test, lint and package commands once the project is scaffolded.
+Requires Node ≥ 22 and pnpm 10. Run from the repository root:
+
+| Command | What it does |
+|---|---|
+| `pnpm install` | Install all workspace dependencies |
+| `pnpm test` | Run every Vitest project once (`pnpm vitest run <path>` for one file or folder) |
+| `pnpm typecheck` | Type-check every package and `scripts/` |
+| `pnpm lint` | ESLint across the repo |
+| `pnpm format` / `pnpm format:check` | Format with Prettier, or check formatting without writing |
+| `pnpm check:boundaries` | Fail if a package depends on an internal package that ADR 0007 doesn't allow |
+
+CI (`.github/workflows/ci.yml`) runs typecheck, lint, format check, boundary check and tests on Ubuntu and Windows.
 
 ## Architecture
 
@@ -65,6 +76,12 @@ Intended major pieces (subject to change):
 ```
 CLAUDE.md          development guidance (this file)
 decisions/         architecture decision records (ADRs) and their index
+packages/
+  schema/          Zod schemas for files and API messages, IDs and file names
+  core/            storage, world model, search, commands, migrations
+scripts/           repo tooling (package boundary check)
+.github/workflows/ CI
+.gitattributes     LF line endings everywhere
 .gitignore
 LICENSE            MIT
 ```
