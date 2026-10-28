@@ -1,4 +1,5 @@
 import { join, relative, sep } from "node:path";
+import { zipSync } from "fflate";
 import {
   DOCUMENT_FOLDERS,
   LIBRARY_FILES,
@@ -32,6 +33,7 @@ import type {
   WriteResult,
 } from "../types.ts";
 import {
+  BACKUPS_DIR,
   SCANNED_FOLDERS,
   WORLDS_DIR,
   assetPath,
@@ -288,16 +290,54 @@ export class JsonFileStorage implements WorldStorage {
     return { type: "upsert", file: result.file };
   }
 
-  loadRaw(_worldId: string): Promise<RawFile[]> {
-    return Promise.reject(new Error("loadRaw is not implemented yet"));
+  /** Every world, library and document file as text, without validating it. */
+  async loadRaw(worldId: string): Promise<RawFile[]> {
+    const root = join(this.worldsDir, await this.folderFor(worldId));
+    const files: RawFile[] = [];
+    for (const sub of SCANNED_FOLDERS) {
+      for (const name of (await this.list(join(root, sub))).sort()) {
+        const path = sub ? `${sub}/${name}` : name;
+        if (!kindForPath(path)) continue;
+        const bytes = await this.read(join(root, path));
+        if (bytes) files.push({ path, text: new TextDecoder("utf-8").decode(bytes) });
+      }
+    }
+    return files;
   }
 
-  writeRaw(_worldId: string, _files: RawFile[]): Promise<void> {
-    return Promise.reject(new Error("writeRaw is not implemented yet"));
+  async writeRaw(worldId: string, files: RawFile[]): Promise<void> {
+    const root = join(this.worldsDir, await this.folderFor(worldId));
+    for (const file of files) await this.putText(root, file.path, file.text);
   }
 
-  backup(_worldId: string): Promise<string> {
-    return Promise.reject(new Error("backup is not implemented yet"));
+  async backup(worldId: string): Promise<string> {
+    const folder = await this.folderFor(worldId);
+    const root = join(this.worldsDir, folder);
+    const entries: Record<string, Uint8Array> = {};
+    for (const path of await this.listTree(root)) {
+      const bytes = await this.read(join(root, path));
+      if (bytes) entries[path] = bytes;
+    }
+    const dir = join(this.dataRoot, BACKUPS_DIR);
+    await this.fs.mkdir(dir, { recursive: true });
+    const path = join(dir, `${folder}-${timestamp(new Date())}.zip`);
+    await writeAtomic(this.fs, path, zipSync(entries), this.sleep);
+    return path;
+  }
+
+  /** Every file under `dir`, as relative paths with forward slashes. */
+  protected async listTree(dir: string, prefix = ""): Promise<string[]> {
+    const paths: string[] = [];
+    for (const name of await this.list(dir)) {
+      if (isTempFile(name)) continue;
+      const relativePath = prefix ? `${prefix}/${name}` : name;
+      if ((await this.fs.stat(join(dir, name))).isDirectory()) {
+        paths.push(...(await this.listTree(join(dir, name), relativePath)));
+      } else {
+        paths.push(relativePath);
+      }
+    }
+    return paths;
   }
 
   protected async folderFor(worldId: string): Promise<string> {
@@ -375,4 +415,13 @@ export class JsonFileStorage implements WorldStorage {
       throw error;
     }
   }
+}
+
+/** Local time as YYYYMMDD-HHmmss, for backup file names. */
+function timestamp(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-` +
+    `${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
+  );
 }

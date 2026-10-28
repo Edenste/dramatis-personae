@@ -57,6 +57,30 @@ export function defineStorageContract(name: string, make: () => Promise<Contract
 
       const removed = await subject.storage.write(worldId, [{ op: "delete", ref }]);
       expect(removed.fingerprints).toEqual({ [refKey(ref)]: null });
+    });
+
+    it("writes raw files back unchanged and makes a backup", async () => {
+      const worldId = await subject.storage.createWorld({ name: "Logres" });
+      const before = await subject.storage.loadWorld(worldId);
+      const raw = await subject.storage.loadRaw(worldId);
+      expect(raw.map((f) => f.path)).toContain("world.json");
+      await subject.storage.writeRaw(worldId, raw);
+      const after = await subject.storage.loadWorld(worldId);
+      expect(after.files.map((f) => f.fingerprint).sort()).toEqual(
+        before.files.map((f) => f.fingerprint).sort(),
+      );
+      expect(typeof (await subject.storage.backup(worldId))).toBe("string");
+    });
+
+    it("deletes a document it wrote", async () => {
+      const worldId = await subject.storage.createWorld({ name: "Logres" });
+      await subject.storage.loadWorld(worldId);
+      const ref = { kind: "character", id: "ector00000000000" } as const;
+      await subject.storage.write(worldId, [
+        { op: "put", ref, fileName: "ector.json", text: serialize({ id: ref.id, name: "Ector" }) },
+      ]);
+      const removed = await subject.storage.write(worldId, [{ op: "delete", ref }]);
+      expect(removed.fingerprints).toEqual({ [refKey(ref)]: null });
       const after = await subject.storage.loadWorld(worldId);
       expect(after.files.some((f) => refKey(f.ref) === refKey(ref))).toBe(false);
     });
