@@ -3,6 +3,7 @@ export * from "./serialize.ts";
 export * from "./storage/types.ts";
 export * from "./storage/errors.ts";
 export * from "./storage/fs.ts";
+export { writeAtomic } from "./storage/json-files/write.ts";
 export {
   JsonFileStorage,
   type JsonFileStorageOptions,
@@ -13,3 +14,4 @@ export { SearchIndex } from "./search/search-index.ts";
 export * from "./commands/index.ts";
 export * from "./open-world.ts";
 export * from "./migrations/migrations.ts";
+export { referenceFix, type ReferenceFix } from "./fixes.ts";

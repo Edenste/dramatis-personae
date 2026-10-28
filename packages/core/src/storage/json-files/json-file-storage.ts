@@ -361,6 +361,48 @@ export class JsonFileStorage implements WorldStorage {
     for (const file of files) await this.putText(root, file.path, file.text);
   }
 
+  async readAsset(worldId: string, fileName: string): Promise<Uint8Array | null> {
+    const root =
+      this.loaded.get(worldId)?.root ?? join(this.worldsDir, await this.folderFor(worldId));
+    return (await this.read(inside(root, assetPath(bareFileName(fileName))))) ?? null;
+  }
+
+  assignNewId(worldId: string, path: string): Promise<StoredFile> {
+    const state = this.loaded.get(worldId);
+    if (!state) {
+      return Promise.reject(
+        new StorageError("not-loaded", worldId, `World ${worldId} isn't loaded`),
+      );
+    }
+    return this.queue.run(`world:${worldId}`, () => this.reassignId(state, path));
+  }
+
+  protected async reassignId(state: WorldState, path: string): Promise<StoredFile> {
+    const kind = kindForPath(path);
+    if (!kind || !isDocumentKind(kind)) {
+      throw new StorageError("io", path, `${path} isn't a document file`);
+    }
+    const bytes = await this.read(inside(state.root, path));
+    if (!bytes) throw new StorageError("not-found", path, `${path} doesn't exist`);
+    const parsed = parseFile(path, kind, bytes);
+    if (!parsed.ok) throw new StorageError("io", path, parsed.problem.message);
+
+    const { $schema, id: oldId, ...rest } = parsed.data;
+    const id = this.generateId();
+    const data = { $schema, id, ...rest };
+    const text = serialize(data);
+    const base = path.slice(path.indexOf("/") + 1, -".json".length);
+    const suffix = typeof oldId === "string" ? `-${oldId}` : null;
+    const stem = suffix && base.endsWith(suffix) ? base.slice(0, -suffix.length) : base;
+    const newPath = `${DOCUMENT_FOLDERS[kind]}/${stem}-${id}.json`;
+
+    await this.putText(state.root, newPath, text);
+    await this.remove(state.root, path);
+    const ref: FileRef = { kind, id };
+    state.paths.set(refKey(ref), newPath);
+    return { path: newPath, ref, data, fingerprint: fingerprint(text) };
+  }
+
   async backup(worldId: string): Promise<string> {
     const folder = await this.folderFor(worldId);
     const root = join(this.worldsDir, folder);

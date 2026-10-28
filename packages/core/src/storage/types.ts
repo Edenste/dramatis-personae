@@ -60,6 +60,13 @@ export interface WorldStorage {
   watch(worldId: string, onChange: (change: ExternalChange) => void): () => void;
   loadRaw(worldId: string): Promise<RawFile[]>;
   writeRaw(worldId: string, files: RawFile[]): Promise<void>;
+  /** A portrait's bytes from assets/portraits/, or null if there is no such file. */
+  readAsset(worldId: string, fileName: string): Promise<Uint8Array | null>;
+  /**
+   * Gives the document at `path` (a copy whose id is taken) a fresh id, under a
+   * file name with the new id. Not a command: the copy isn't in the model.
+   */
+  assignNewId(worldId: string, path: string): Promise<StoredFile>;
   /** Zips the whole world into Backups/ and returns the zip's path. */
   backup(worldId: string): Promise<string>;
 }

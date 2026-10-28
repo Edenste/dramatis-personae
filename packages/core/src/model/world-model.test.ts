@@ -121,3 +121,14 @@ describe("immutability and blocking", () => {
     expect(snapshot.world).toMatchObject({ name: "Camelot" });
   });
 });
+
+describe("files", () => {
+  it("lists every loaded file with its fingerprint, sorted by path", async () => {
+    const model = await loadCamelotModel();
+    const files = model.files();
+    expect(files.length).toBe(Object.keys(model.snapshot()).length);
+    for (const file of files) expect(file.fingerprint).toMatch(/^[0-9a-f]{64}$/);
+    const paths = files.map((f) => f.path);
+    expect(paths).toEqual([...paths].sort());
+  });
+});

@@ -84,5 +84,54 @@ export function defineStorageContract(name: string, make: () => Promise<Contract
       const after = await subject.storage.loadWorld(worldId);
       expect(after.files.some((f) => refKey(f.ref) === refKey(ref))).toBe(false);
     });
+
+    it("reads back a portrait it wrote, and nothing outside the portraits folder", async () => {
+      const worldId = await subject.storage.createWorld({ name: "Logres" });
+      await subject.storage.loadWorld(worldId);
+      await subject.storage.write(worldId, [
+        { op: "putAsset", fileName: "kay.png", bytes: new Uint8Array([1, 2, 3]) },
+      ]);
+      expect([...((await subject.storage.readAsset(worldId, "kay.png")) ?? [])]).toEqual([1, 2, 3]);
+      expect(await subject.storage.readAsset(worldId, "missing.png")).toBeNull();
+      await expect(subject.storage.readAsset(worldId, "../world.json")).rejects.toMatchObject({
+        code: "io",
+      });
+    });
+
+    it("gives a copied document a new id", async () => {
+      const worldId = await subject.storage.createWorld({ name: "Logres" });
+      await subject.storage.loadWorld(worldId);
+      const ref = { kind: "character", id: "ector00000000000" } as const;
+      const text = serialize({ id: ref.id, name: "Ector" });
+      await subject.storage.write(worldId, [
+        { op: "put", ref, fileName: `ector-${ref.id}.json`, text },
+      ]);
+      await subject.storage.writeRaw(worldId, [{ path: "characters/zz-ector-copy.json", text }]);
+      const loaded = await subject.storage.loadWorld(worldId);
+      expect(loaded.problems).toEqual([
+        expect.objectContaining({ code: "duplicate-id", path: "characters/zz-ector-copy.json" }),
+      ]);
+
+      const file = await subject.storage.assignNewId(worldId, "characters/zz-ector-copy.json");
+      const newId = "id" in file.ref ? file.ref.id : "";
+      expect(file.ref.kind).toBe("character");
+      expect(newId).toMatch(/^[a-z0-9]{16}$/);
+      expect(newId).not.toBe(ref.id);
+
+      const after = await subject.storage.loadWorld(worldId);
+      expect(after.problems).toEqual([]);
+      expect(after.files.filter((f) => f.ref.kind === "character")).toHaveLength(2);
+    });
+
+    it("refuses to reassign the id of a missing file or a non-document", async () => {
+      const worldId = await subject.storage.createWorld({ name: "Logres" });
+      await subject.storage.loadWorld(worldId);
+      await expect(
+        subject.storage.assignNewId(worldId, "characters/nobody.json"),
+      ).rejects.toMatchObject({ code: "not-found" });
+      await expect(subject.storage.assignNewId(worldId, "roles.json")).rejects.toMatchObject({
+        code: "io",
+      });
+    });
   });
 }

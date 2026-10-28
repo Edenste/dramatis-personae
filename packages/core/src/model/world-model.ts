@@ -172,6 +172,13 @@ export class WorldModel {
     return new WorldModel(this.worldId, this.entries, this.assets, loadProblems, invalid);
   }
 
+  /** Every file with its path and fingerprint, sorted by path. */
+  files(): Array<{ ref: FileRef; path: string; data: unknown; fingerprint: string }> {
+    return [...this.entries.values()]
+      .map(({ ref, path, data, fingerprint }) => ({ ref, path, data, fingerprint }))
+      .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+  }
+
   /** Every file's data by ref key, for the API and for comparing worlds in tests. */
   snapshot(): Record<string, unknown> {
     return Object.fromEntries([...this.entries].map(([key, entry]) => [key, entry.data]));

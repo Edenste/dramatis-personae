@@ -81,6 +81,18 @@ describe("JsonFileStorage.watch", () => {
     expect(changes).toEqual([]);
   });
 
+  it("stays quiet when the app gives a copied file a new id", async () => {
+    await writeFile(
+      join(characters(), "kay-copy.json"),
+      await readFile(join(characters(), kayFile)),
+    );
+    await vi.waitFor(() => expect(changes).toHaveLength(1), WAIT);
+    expect(changes[0]).toMatchObject({ type: "invalid", path: "characters/kay-copy.json" });
+    await storage.assignNewId(camelot.worldId, "characters/kay-copy.json");
+    await quiet(600);
+    expect(changes).toHaveLength(1);
+  });
+
   it("reports broken JSON as invalid", async () => {
     await writeFile(join(characters(), kayFile), "{ not json");
     await vi.waitFor(() => expect(changes).toHaveLength(1), WAIT);
