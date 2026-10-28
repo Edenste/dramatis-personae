@@ -21,6 +21,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Check the generated API client is up to date
+        run: pnpm generate:api && git diff --exit-code -- packages/api-client
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm format:check

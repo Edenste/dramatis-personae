@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "check:boundaries": "node --experimental-strip-types --no-warnings scripts/check-boundaries.ts"
+    "check:boundaries": "node --experimental-strip-types --no-warnings scripts/check-boundaries.ts",
+    "generate:api": "pnpm --filter @dramatis-personae/server openapi && pnpm --filter @dramatis-personae/api-client generate"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

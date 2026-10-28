@@ -4,7 +4,15 @@ import importX from "eslint-plugin-import-x";
 import globals from "globals";
 
 export default tseslint.config(
-  { ignores: ["**/node_modules/**", "**/dist/**", "samples/worlds/**", "coverage/**"] },
+  {
+    ignores: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "samples/worlds/**",
+      "coverage/**",
+      "packages/api-client/src/schema.d.ts",
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {

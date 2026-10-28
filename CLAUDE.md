@@ -41,8 +41,9 @@ Requires Node ≥ 22 and pnpm 10. Run from the repository root:
 | `pnpm lint` | ESLint across the repo |
 | `pnpm format` / `pnpm format:check` | Format with Prettier, or check formatting without writing |
 | `pnpm check:boundaries` | Fail if a package depends on an internal package that ADR 0007 doesn't allow |
+| `pnpm generate:api` | Regenerate `packages/api-client` from the server's OpenAPI spec; commit the result |
 
-CI (`.github/workflows/ci.yml`) runs typecheck, lint, format check, boundary check and tests on Ubuntu and Windows.
+CI (`.github/workflows/ci.yml`) checks the generated API client is current, then runs typecheck, lint, format check, boundary check and tests on Ubuntu and Windows.
 
 ## Architecture
 
@@ -81,6 +82,7 @@ apps/
 packages/
   schema/          Zod schemas for files and API messages, IDs and file names
   core/            storage, world model, search, commands, migrations
+  api-client/      typed HTTP client generated from the server's OpenAPI spec
 scripts/           repo tooling (package boundary check)
 .github/workflows/ CI
 .gitattributes     LF line endings everywhere
