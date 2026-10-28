@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@dramatis-personae/schema": "workspace:*",
-    "chokidar": "^4.0.3"
+    "chokidar": "^4.0.3",
+    "minisearch": "^7.2.0"
   },
   "devDependencies": {
     "@dramatis-personae/samples": "workspace:*",
