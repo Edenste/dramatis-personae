@@ -1,0 +1,16 @@
+{
+  "$schema": "../world.schema.json#/$defs/character",
+  "id": "joeayi27k1vhkdel",
+  "name": "Percival",
+  "color": null,
+  "roles": [
+    "75vt2giqk5cetozt",
+    "zay88wm4cwz513qm"
+  ],
+  "templates": [],
+  "extraFields": [],
+  "fields": {
+    "title": "Knight of the Round Table"
+  },
+  "body": "## Overview\nA knight raised far from court, one of the three who reach the Grail."
+}

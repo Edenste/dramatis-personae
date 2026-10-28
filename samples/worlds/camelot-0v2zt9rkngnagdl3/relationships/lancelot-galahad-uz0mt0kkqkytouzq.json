@@ -1,0 +1,17 @@
+{
+  "$schema": "../world.schema.json#/$defs/relationship",
+  "id": "uz0mt0kkqkytouzq",
+  "a": "q20xlqw3l8g1f0c9",
+  "b": "rrxtmydrsn3wy0ux",
+  "twoWay": [],
+  "aToB": [
+    "tktyo1fdmavt5zw3"
+  ],
+  "bToA": [
+    "okp4ydmsj0i02ehk"
+  ],
+  "notes": {
+    "a": "",
+    "b": ""
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "../world.schema.json#/$defs/character",
+  "id": "vray3h83xfszbo6d",
+  "name": "Arthur",
+  "color": null,
+  "roles": [
+    "75vt2giqk5cetozt",
+    "awn1i49tcjk0kltj"
+  ],
+  "templates": [],
+  "extraFields": [],
+  "fields": {
+    "title": "King of the Britons",
+    "birthday": {
+      "calendar": "gregorian",
+      "month": 1,
+      "day": 6
+    }
+  },
+  "portrait": {
+    "file": "arthur-vray3h83xfszbo6d.jpg",
+    "crop": {
+      "x": 0.22,
+      "y": 0.02,
+      "size": 0.4
+    }
+  },
+  "body": "## Overview\nSon of Uther Pendragon, raised in secret by Sir Ector. He became king by drawing the sword from the stone."
+}

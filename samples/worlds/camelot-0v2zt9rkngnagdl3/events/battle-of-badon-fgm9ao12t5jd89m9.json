@@ -1,0 +1,19 @@
+{
+  "$schema": "../world.schema.json#/$defs/event",
+  "id": "fgm9ao12t5jd89m9",
+  "title": "Battle of Badon",
+  "date": {
+    "calendar": "gregorian",
+    "year": 516,
+    "month": 5,
+    "day": 2
+  },
+  "repeat": "yearly",
+  "color": "#d64545",
+  "characters": [
+    "vray3h83xfszbo6d",
+    "zjt1iy7ej5846yv8",
+    "2mxafd1whkfr51wp"
+  ],
+  "body": ""
+}

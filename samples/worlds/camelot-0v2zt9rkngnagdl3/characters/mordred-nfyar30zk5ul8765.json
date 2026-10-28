@@ -1,0 +1,16 @@
+{
+  "$schema": "../world.schema.json#/$defs/character",
+  "id": "nfyar30zk5ul8765",
+  "name": "Mordred",
+  "color": null,
+  "roles": [
+    "75vt2giqk5cetozt",
+    "p3h388ewu5s526rs"
+  ],
+  "templates": [],
+  "extraFields": [],
+  "fields": {
+    "title": "Knight of the Round Table"
+  },
+  "body": "## Overview\nArthur's son and nephew, whose rebellion ends at Camlann."
+}

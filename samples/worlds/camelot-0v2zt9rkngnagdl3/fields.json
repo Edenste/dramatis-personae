@@ -1,0 +1,58 @@
+{
+  "$schema": "./world.schema.json#/$defs/fields",
+  "fields": [
+    {
+      "key": "birthday",
+      "label": "Birthday",
+      "type": "date",
+      "section": "personal",
+      "default": true,
+      "calendar": {
+        "show": true,
+        "color": "#e0a030",
+        "title": "{name}'s birthday"
+      }
+    },
+    {
+      "key": "title",
+      "label": "Title",
+      "type": "text",
+      "section": "overview",
+      "default": true
+    },
+    {
+      "key": "bloodType",
+      "label": "Blood type",
+      "type": "select",
+      "section": "personal",
+      "default": false,
+      "options": [
+        "A",
+        "B",
+        "AB",
+        "O"
+      ]
+    },
+    {
+      "key": "liege",
+      "label": "Liege",
+      "type": "text",
+      "section": "knighthood",
+      "default": false
+    },
+    {
+      "key": "weapon",
+      "label": "Weapon",
+      "type": "text",
+      "section": "knighthood",
+      "default": false
+    },
+    {
+      "key": "steed",
+      "label": "Steed",
+      "type": "text",
+      "section": "knighthood",
+      "default": false
+    }
+  ]
+}

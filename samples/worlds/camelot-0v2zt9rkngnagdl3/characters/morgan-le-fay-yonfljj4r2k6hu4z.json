@@ -1,0 +1,15 @@
+{
+  "$schema": "../world.schema.json#/$defs/character",
+  "id": "yonfljj4r2k6hu4z",
+  "name": "Morgan le Fay",
+  "color": null,
+  "roles": [
+    "zuub4hq7itul9912"
+  ],
+  "templates": [],
+  "extraFields": [],
+  "fields": {
+    "title": "Enchantress of Avalon"
+  },
+  "body": "## Overview\nArthur's half-sister, a sorceress who schemes against Camelot."
+}

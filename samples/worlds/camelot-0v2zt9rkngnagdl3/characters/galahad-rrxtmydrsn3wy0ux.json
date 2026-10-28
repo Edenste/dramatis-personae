@@ -1,0 +1,21 @@
+{
+  "$schema": "../world.schema.json#/$defs/character",
+  "id": "rrxtmydrsn3wy0ux",
+  "name": "Galahad",
+  "color": null,
+  "roles": [
+    "75vt2giqk5cetozt",
+    "zay88wm4cwz513qm"
+  ],
+  "templates": [],
+  "extraFields": [],
+  "fields": {
+    "title": "Knight of the Round Table",
+    "birthday": {
+      "calendar": "gregorian",
+      "month": 11,
+      "day": 3
+    }
+  },
+  "body": "## Overview\nSon of Lancelot, the purest of knights, who achieves the Grail."
+}

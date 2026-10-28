@@ -1,0 +1,15 @@
+{
+  "$schema": "../world.schema.json#/$defs/character",
+  "id": "ocufjaya8izaisto",
+  "name": "Lady of the Lake",
+  "color": null,
+  "roles": [
+    "zuub4hq7itul9912"
+  ],
+  "templates": [],
+  "extraFields": [],
+  "fields": {
+    "title": "Enchantress"
+  },
+  "body": "## Overview\nGuardian of Excalibur, who raised Lancelot in her lake."
+}

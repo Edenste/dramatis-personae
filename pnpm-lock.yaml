@@ -59,6 +59,16 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5(@types/node@26.6.5)(vite@8.3.5(@types/node@26.6.5))
 
+  samples:
+    dependencies:
+      '@dramatis-personae/schema':
+        specifier: workspace:*
+        version: link:../packages/schema
+    devDependencies:
+      vitest:
+        specifier: ^5.0.5
+        version: 5.0.5(@types/node@26.6.5)(vite@8.3.5(@types/node@26.6.5))
+
 packages:
 
   '@cacheable/memory@2.2.0':

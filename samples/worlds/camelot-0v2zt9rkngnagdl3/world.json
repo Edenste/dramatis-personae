@@ -1,0 +1,7 @@
+{
+  "$schema": "./world.schema.json#/$defs/world",
+  "id": "0v2zt9rkngnagdl3",
+  "name": "Camelot",
+  "schemaVersion": 1,
+  "mainView": "6qng2iql80g5bp0p"
+}

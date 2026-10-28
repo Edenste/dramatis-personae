@@ -1,0 +1,15 @@
+{
+  "$schema": "./world.schema.json#/$defs/templates",
+  "templates": [
+    {
+      "id": "8q3y3tjaoi1mj28c",
+      "name": "Knight",
+      "role": "75vt2giqk5cetozt",
+      "fields": [
+        "liege",
+        "weapon",
+        "steed"
+      ]
+    }
+  ]
+}

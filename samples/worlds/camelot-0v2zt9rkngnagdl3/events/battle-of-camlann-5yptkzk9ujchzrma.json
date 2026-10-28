@@ -1,0 +1,19 @@
+{
+  "$schema": "../world.schema.json#/$defs/event",
+  "id": "5yptkzk9ujchzrma",
+  "title": "Battle of Camlann",
+  "date": {
+    "calendar": "gregorian",
+    "year": 537,
+    "month": 6,
+    "day": 1
+  },
+  "repeat": "none",
+  "color": "#5a5a5a",
+  "characters": [
+    "vray3h83xfszbo6d",
+    "nfyar30zk5ul8765",
+    "zjt1iy7ej5846yv8"
+  ],
+  "body": ""
+}

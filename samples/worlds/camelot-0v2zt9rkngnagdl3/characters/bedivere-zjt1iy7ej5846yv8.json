@@ -1,0 +1,15 @@
+{
+  "$schema": "../world.schema.json#/$defs/character",
+  "id": "zjt1iy7ej5846yv8",
+  "name": "Bedivere",
+  "color": null,
+  "roles": [
+    "75vt2giqk5cetozt"
+  ],
+  "templates": [],
+  "extraFields": [],
+  "fields": {
+    "title": "Marshal of Camelot"
+  },
+  "body": "## Overview\nOne of Arthur's earliest companions, who returns Excalibur to the lake."
+}

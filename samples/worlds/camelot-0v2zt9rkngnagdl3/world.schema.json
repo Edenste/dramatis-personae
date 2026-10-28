@@ -1,0 +1,739 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "world": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]{16}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schemaVersion": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "mainView": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z0-9]{16}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "schemaVersion",
+        "mainView"
+      ],
+      "additionalProperties": {}
+    },
+    "fields": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "number",
+                  "date",
+                  "colour",
+                  "select",
+                  "multiselect",
+                  "character",
+                  "measurement"
+                ]
+              },
+              "section": {
+                "type": "string"
+              },
+              "default": {
+                "type": "boolean"
+              },
+              "options": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "calendar": {
+                "type": "object",
+                "properties": {
+                  "show": {
+                    "type": "boolean"
+                  },
+                  "color": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^#[0-9a-fA-F]{6}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "show",
+                  "color",
+                  "title"
+                ]
+              }
+            },
+            "required": [
+              "key",
+              "label",
+              "type",
+              "default"
+            ],
+            "additionalProperties": {}
+          }
+        }
+      },
+      "required": [
+        "fields"
+      ],
+      "additionalProperties": {}
+    },
+    "roles": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9]{16}$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "major",
+                  "minor"
+                ]
+              },
+              "color": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "leaders": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]{16}$"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "kind",
+              "color"
+            ],
+            "additionalProperties": {}
+          }
+        }
+      },
+      "required": [
+        "roles"
+      ],
+      "additionalProperties": {}
+    },
+    "relationshipTypes": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9]{16}$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "two-way",
+                  "one-way"
+                ]
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "line": {
+                "type": "object",
+                "properties": {
+                  "style": {
+                    "type": "string",
+                    "enum": [
+                      "solid",
+                      "dashed",
+                      "dotted"
+                    ]
+                  },
+                  "weight": {
+                    "type": "string",
+                    "enum": [
+                      "thin",
+                      "normal",
+                      "thick"
+                    ]
+                  }
+                },
+                "required": [
+                  "style",
+                  "weight"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "direction",
+              "color",
+              "line"
+            ],
+            "additionalProperties": {}
+          }
+        }
+      },
+      "required": [
+        "types"
+      ],
+      "additionalProperties": {}
+    },
+    "templates": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "templates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9]{16}$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "role": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]{16}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "role",
+              "fields"
+            ],
+            "additionalProperties": {}
+          }
+        }
+      },
+      "required": [
+        "templates"
+      ],
+      "additionalProperties": {}
+    },
+    "character": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]{16}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "color": {
+          "default": null,
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "roles": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]{16}$"
+          }
+        },
+        "templates": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]{16}$"
+          }
+        },
+        "extraFields": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fields": {
+          "type": "object",
+          "properties": {
+            "birthday": {
+              "type": "object",
+              "properties": {
+                "calendar": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "year": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "month": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 12
+                },
+                "day": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 31
+                }
+              },
+              "required": [
+                "calendar"
+              ],
+              "additionalProperties": {},
+              "title": "Birthday"
+            },
+            "title": {
+              "type": "string",
+              "title": "Title"
+            },
+            "bloodType": {
+              "type": "string",
+              "enum": [
+                "A",
+                "B",
+                "AB",
+                "O"
+              ],
+              "title": "Blood type"
+            },
+            "liege": {
+              "type": "string",
+              "title": "Liege"
+            },
+            "weapon": {
+              "type": "string",
+              "title": "Weapon"
+            },
+            "steed": {
+              "type": "string",
+              "title": "Steed"
+            }
+          },
+          "additionalProperties": true
+        },
+        "portrait": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "crop": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "y": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "size": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "x",
+                "y",
+                "size"
+              ]
+            }
+          },
+          "required": [
+            "file",
+            "crop"
+          ],
+          "additionalProperties": {}
+        },
+        "body": {
+          "default": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "additionalProperties": {}
+    },
+    "relationship": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]{16}$"
+        },
+        "a": {
+          "type": "string",
+          "pattern": "^[a-z0-9]{16}$"
+        },
+        "b": {
+          "type": "string",
+          "pattern": "^[a-z0-9]{16}$"
+        },
+        "twoWay": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]{16}$"
+          }
+        },
+        "aToB": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]{16}$"
+          }
+        },
+        "bToA": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]{16}$"
+          }
+        },
+        "notes": {
+          "default": {
+            "a": "",
+            "b": ""
+          },
+          "type": "object",
+          "properties": {
+            "a": {
+              "type": "string"
+            },
+            "b": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "a",
+            "b"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "a",
+        "b"
+      ],
+      "additionalProperties": {}
+    },
+    "event": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]{16}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "date": {
+          "type": "object",
+          "properties": {
+            "calendar": {
+              "type": "string",
+              "minLength": 1
+            },
+            "year": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "month": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "day": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 31
+            }
+          },
+          "required": [
+            "calendar"
+          ],
+          "additionalProperties": {}
+        },
+        "repeat": {
+          "type": "string",
+          "enum": [
+            "yearly",
+            "none"
+          ]
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "characters": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]{16}$"
+          }
+        },
+        "body": {
+          "default": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "date",
+        "repeat",
+        "color"
+      ],
+      "additionalProperties": {}
+    },
+    "view": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]{16}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "camera": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "zoom": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "x",
+            "y",
+            "zoom"
+          ]
+        },
+        "focus": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z0-9]{16}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "depth": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "filters": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "clustering": {
+          "type": "string",
+          "enum": [
+            "highest",
+            "all"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "camera",
+        "focus",
+        "depth",
+        "clustering"
+      ],
+      "additionalProperties": {}
+    },
+    "search": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]{16}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "query": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "query"
+      ],
+      "additionalProperties": {}
+    }
+  }
+}

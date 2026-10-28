@@ -1,0 +1,26 @@
+{
+  "$schema": "../world.schema.json#/$defs/character",
+  "id": "f7khwc5501kc2akj",
+  "name": "Merlin",
+  "color": null,
+  "roles": [
+    "awn1i49tcjk0kltj"
+  ],
+  "templates": [],
+  "extraFields": [
+    "bloodType"
+  ],
+  "fields": {
+    "title": "Enchanter",
+    "bloodType": "O"
+  },
+  "portrait": {
+    "file": "merlin-f7khwc5501kc2akj.jpg",
+    "crop": {
+      "x": 0.54,
+      "y": 0,
+      "size": 0.36
+    }
+  },
+  "body": "## Overview\nProphet and enchanter who guided Arthur from his birth to his crowning."
+}

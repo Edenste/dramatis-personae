@@ -1,0 +1,19 @@
+{
+  "$schema": "../world.schema.json#/$defs/event",
+  "id": "3wqyqm8yo6ledhjc",
+  "title": "The Sword in the Stone",
+  "date": {
+    "calendar": "gregorian",
+    "year": 495,
+    "month": 1,
+    "day": 1
+  },
+  "repeat": "none",
+  "color": "#3b6fd4",
+  "characters": [
+    "vray3h83xfszbo6d",
+    "2mxafd1whkfr51wp",
+    "f7khwc5501kc2akj"
+  ],
+  "body": ""
+}

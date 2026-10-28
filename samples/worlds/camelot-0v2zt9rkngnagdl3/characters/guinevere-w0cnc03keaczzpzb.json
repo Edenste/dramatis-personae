@@ -1,0 +1,28 @@
+{
+  "$schema": "../world.schema.json#/$defs/character",
+  "id": "w0cnc03keaczzpzb",
+  "name": "Guinevere",
+  "color": null,
+  "roles": [
+    "awn1i49tcjk0kltj"
+  ],
+  "templates": [],
+  "extraFields": [],
+  "fields": {
+    "title": "Queen of Camelot",
+    "birthday": {
+      "calendar": "gregorian",
+      "month": 5,
+      "day": 1
+    }
+  },
+  "portrait": {
+    "file": "guinevere-w0cnc03keaczzpzb.jpg",
+    "crop": {
+      "x": 0.24,
+      "y": 0.03,
+      "size": 0.38
+    }
+  },
+  "body": "## Overview\nDaughter of King Leodegrance of Cameliard, and Arthur's queen."
+}

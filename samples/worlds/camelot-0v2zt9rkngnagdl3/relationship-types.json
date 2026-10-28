@@ -1,0 +1,195 @@
+{
+  "$schema": "./world.schema.json#/$defs/relationshipTypes",
+  "types": [
+    {
+      "id": "ztvyh0j6nk9gj0ho",
+      "name": "Family",
+      "direction": "two-way",
+      "color": "#e0a030",
+      "line": {
+        "style": "solid",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "os8e4r4q7ml3413d",
+      "name": "Friends",
+      "direction": "two-way",
+      "color": "#3fa34d",
+      "line": {
+        "style": "solid",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "l2yeb6n4j06v1lwp",
+      "name": "Close friends",
+      "direction": "two-way",
+      "color": "#2bb673",
+      "line": {
+        "style": "solid",
+        "weight": "thick"
+      }
+    },
+    {
+      "id": "vst8g1h25vrp9qwl",
+      "name": "Acquaintances",
+      "direction": "two-way",
+      "color": "#9aa0a6",
+      "line": {
+        "style": "dotted",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "c3iqp3ssfvkpgs60",
+      "name": "Partners",
+      "direction": "two-way",
+      "color": "#e05a8a",
+      "line": {
+        "style": "solid",
+        "weight": "thick"
+      }
+    },
+    {
+      "id": "pueufvgw2ukurodb",
+      "name": "Former partners",
+      "direction": "two-way",
+      "color": "#c99aae",
+      "line": {
+        "style": "dashed",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "5gyqryozabt5chj4",
+      "name": "Allies",
+      "direction": "two-way",
+      "color": "#3b82f6",
+      "line": {
+        "style": "solid",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "yu6wrhclu0vo7g23",
+      "name": "Colleagues",
+      "direction": "two-way",
+      "color": "#64748b",
+      "line": {
+        "style": "solid",
+        "weight": "thin"
+      }
+    },
+    {
+      "id": "jbs3vozgcmdzpzu2",
+      "name": "Rivals",
+      "direction": "two-way",
+      "color": "#f08c2e",
+      "line": {
+        "style": "dashed",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "jznt59ojvznj5cnx",
+      "name": "Enemies",
+      "direction": "two-way",
+      "color": "#d64545",
+      "line": {
+        "style": "dashed",
+        "weight": "thick"
+      }
+    },
+    {
+      "id": "2ycrdjgtb6x6xklp",
+      "name": "Crush",
+      "direction": "one-way",
+      "color": "#f29cc0",
+      "line": {
+        "style": "dotted",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "qf4hd07ytoukmo5c",
+      "name": "Mentor",
+      "direction": "one-way",
+      "color": "#8b5cf6",
+      "line": {
+        "style": "solid",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "rhtpysz2rcdurt4f",
+      "name": "Student",
+      "direction": "one-way",
+      "color": "#a78bfa",
+      "line": {
+        "style": "dashed",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "3uex0rviax5op3mf",
+      "name": "Leader",
+      "direction": "one-way",
+      "color": "#4f46e5",
+      "line": {
+        "style": "solid",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "8ie6c722l3da5gfu",
+      "name": "Follower",
+      "direction": "one-way",
+      "color": "#818cf8",
+      "line": {
+        "style": "dashed",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "tktyo1fdmavt5zw3",
+      "name": "Parent",
+      "direction": "one-way",
+      "color": "#e0a030",
+      "line": {
+        "style": "solid",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "okp4ydmsj0i02ehk",
+      "name": "Child",
+      "direction": "one-way",
+      "color": "#e0a030",
+      "line": {
+        "style": "dashed",
+        "weight": "normal"
+      }
+    },
+    {
+      "id": "no5n6bg36lhlbwac",
+      "name": "Admirer",
+      "direction": "one-way",
+      "color": "#f2b8d0",
+      "line": {
+        "style": "dotted",
+        "weight": "thin"
+      }
+    },
+    {
+      "id": "h023vd59bzpkehg1",
+      "name": "Protector",
+      "direction": "one-way",
+      "color": "#0ea5a4",
+      "line": {
+        "style": "solid",
+        "weight": "normal"
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "../world.schema.json#/$defs/character",
+  "id": "q20xlqw3l8g1f0c9",
+  "name": "Lancelot",
+  "color": null,
+  "roles": [
+    "75vt2giqk5cetozt"
+  ],
+  "templates": [
+    "8q3y3tjaoi1mj28c"
+  ],
+  "extraFields": [],
+  "fields": {
+    "title": "Knight of the Round Table",
+    "birthday": {
+      "calendar": "gregorian",
+      "month": 8,
+      "day": 15
+    },
+    "liege": "King Arthur",
+    "weapon": "Arondight"
+  },
+  "body": "## Backstory\nRaised by the Lady of the Lake, he became the greatest of Arthur's knights."
+}

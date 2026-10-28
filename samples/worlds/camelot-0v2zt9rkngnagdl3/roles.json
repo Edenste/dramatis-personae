@@ -1,0 +1,44 @@
+{
+  "$schema": "./world.schema.json#/$defs/roles",
+  "roles": [
+    {
+      "id": "75vt2giqk5cetozt",
+      "name": "Knights of the Round Table",
+      "kind": "major",
+      "color": "#3b6fd4",
+      "leaders": [
+        "vray3h83xfszbo6d"
+      ]
+    },
+    {
+      "id": "awn1i49tcjk0kltj",
+      "name": "Court of Camelot",
+      "kind": "major",
+      "color": "#c08a2e",
+      "leaders": []
+    },
+    {
+      "id": "zuub4hq7itul9912",
+      "name": "Avalon",
+      "kind": "major",
+      "color": null,
+      "leaders": []
+    },
+    {
+      "id": "zay88wm4cwz513qm",
+      "name": "Grail Quest",
+      "kind": "minor",
+      "color": "#8f5bd6",
+      "leaders": [
+        "rrxtmydrsn3wy0ux"
+      ]
+    },
+    {
+      "id": "p3h388ewu5s526rs",
+      "name": "Orkney kin",
+      "kind": "minor",
+      "color": null,
+      "leaders": []
+    }
+  ]
+}

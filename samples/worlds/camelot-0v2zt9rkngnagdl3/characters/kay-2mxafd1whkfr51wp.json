@@ -1,0 +1,16 @@
+{
+  "$schema": "../world.schema.json#/$defs/character",
+  "id": "2mxafd1whkfr51wp",
+  "name": "Kay",
+  "color": null,
+  "roles": [
+    "75vt2giqk5cetozt",
+    "awn1i49tcjk0kltj"
+  ],
+  "templates": [],
+  "extraFields": [],
+  "fields": {
+    "title": "Seneschal"
+  },
+  "body": "## Overview\nSon of Sir Ector and Arthur's foster brother, sharp of tongue."
+}
