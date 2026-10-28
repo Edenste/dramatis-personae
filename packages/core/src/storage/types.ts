@@ -57,7 +57,12 @@ export interface WorldStorage {
   createWorld(init: { name: string }): Promise<string>;
   loadWorld(worldId: string): Promise<LoadedWorld>;
   write(worldId: string, changes: DocumentChange[]): Promise<WriteResult>;
-  watch(worldId: string, onChange: (change: ExternalChange) => void): () => void;
+  /** `onReady` is called once outside changes are being seen; earlier ones can be missed. */
+  watch(
+    worldId: string,
+    onChange: (change: ExternalChange) => void,
+    onReady?: () => void,
+  ): () => void;
   loadRaw(worldId: string): Promise<RawFile[]>;
   writeRaw(worldId: string, files: RawFile[]): Promise<void>;
   /** A portrait's bytes from assets/portraits/, or null if there is no such file. */

@@ -10,7 +10,6 @@ import type { WorldSession } from "./world-session.ts";
 
 const owner = { id: "local", role: "owner" } as const;
 const WAIT = { timeout: 3000, interval: 50 };
-const quiet = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const kayId = CAMELOT_IDS.characters.Kay!;
 const gawainId = CAMELOT_IDS.characters.Gawain!;
 const kay: FileRef = { kind: "character", id: kayId };
@@ -43,7 +42,6 @@ describe("WorldSession", () => {
     session = await sessions.get(camelot.worldId);
     messages = [];
     session.subscribe((message) => messages.push(message));
-    await quiet(300); // let the watcher finish its first scan
   }
 
   const renameKay = (name: string, expect?: Record<string, string | null>) =>

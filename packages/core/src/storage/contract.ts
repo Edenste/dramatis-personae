@@ -85,6 +85,16 @@ export function defineStorageContract(name: string, make: () => Promise<Contract
       expect(after.files.some((f) => refKey(f.ref) === refKey(ref))).toBe(false);
     });
 
+    it("says when the watcher is ready", async () => {
+      const worldId = await subject.storage.createWorld({ name: "Logres" });
+      await subject.storage.loadWorld(worldId);
+      let stop = () => {};
+      await new Promise<void>((resolve) => {
+        stop = subject.storage.watch(worldId, () => undefined, resolve);
+      });
+      stop();
+    });
+
     it("reads back a portrait it wrote, and nothing outside the portraits folder", async () => {
       const worldId = await subject.storage.createWorld({ name: "Logres" });
       await subject.storage.loadWorld(worldId);

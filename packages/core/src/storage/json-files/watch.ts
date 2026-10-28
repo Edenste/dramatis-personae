@@ -7,9 +7,14 @@ export const WATCH_DEBOUNCE_MS = 150;
 
 /**
  * Watches a world folder and calls `onSettled` with an absolute path once that
- * path has been quiet for WATCH_DEBOUNCE_MS. Returns a function that stops it.
+ * path has been quiet for WATCH_DEBOUNCE_MS, and `onReady` once the first scan
+ * is done (changes before that can be missed). Returns a function that stops it.
  */
-export function watchFolder(root: string, onSettled: (path: string) => void): () => void {
+export function watchFolder(
+  root: string,
+  onSettled: (path: string) => void,
+  onReady?: () => void,
+): () => void {
   const timers = new Map<string, NodeJS.Timeout>();
   const watcher = watch(root, {
     ignoreInitial: true,
@@ -31,6 +36,7 @@ export function watchFolder(root: string, onSettled: (path: string) => void): ()
     );
   };
   watcher.on("add", schedule).on("change", schedule).on("unlink", schedule);
+  if (onReady) watcher.once("ready", onReady);
 
   return () => {
     for (const timer of timers.values()) clearTimeout(timer);

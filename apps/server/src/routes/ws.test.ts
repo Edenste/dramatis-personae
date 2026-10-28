@@ -9,7 +9,6 @@ import type { ServerMessage } from "@dramatis-personae/schema";
 import { TOKEN, testPaths, testServer, type TestServer } from "../test-utils/server.ts";
 
 const WAIT = { timeout: 3000, interval: 50 };
-const quiet = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const kayKey = `character:${CAMELOT_IDS.characters.Kay}`;
 const gawainKey = `character:${CAMELOT_IDS.characters.Gawain}`;
 
@@ -58,6 +57,14 @@ describe("world WebSocket", () => {
     await server.close();
   });
 
+  /** The server subscribes the socket once the world is open; opening it first makes that immediate. */
+  const subscribed = async () => {
+    const snapshot = await fetch(`${origin}/api/worlds/${camelot.worldId}`, {
+      headers: { authorization: `Bearer ${TOKEN}` },
+    });
+    expect(snapshot.status).toBe(200);
+  };
+
   const changedKeys = (messages: ServerMessage[]) =>
     messages.flatMap((m) =>
       m.type === "changed" ? m.files.map((f) => `character:${"id" in f.ref ? f.ref.id : ""}`) : [],
@@ -65,7 +72,7 @@ describe("world WebSocket", () => {
 
   it("pushes the app's own changes", async () => {
     const { socket, messages } = await connect(wsUrl, auth);
-    await quiet(300);
+    await subscribed();
     const response = await fetch(`${origin}/api/worlds/${camelot.worldId}/commands`, {
       method: "POST",
       headers: { authorization: `Bearer ${TOKEN}`, "content-type": "application/json" },
@@ -82,7 +89,7 @@ describe("world WebSocket", () => {
 
   it("pushes outside edits", async () => {
     const { socket, messages } = await connect(wsUrl, auth);
-    await quiet(300);
+    await subscribed();
     const characters = join(camelot.worldPath, "characters");
     const file = join(
       characters,

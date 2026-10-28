@@ -83,8 +83,15 @@ export class WorldSession {
   ): Promise<WorldSession> {
     const { model, readOnly } = await openWorld(storage, worldId, options);
     const session = new WorldSession(storage, worldId, model, readOnly);
-    session.stopWatching = storage.watch(worldId, (change) => {
-      void session.queue.run(() => Promise.resolve(session.onExternal(change)));
+    // The world counts as open once outside edits are being seen.
+    await new Promise<void>((ready) => {
+      session.stopWatching = storage.watch(
+        worldId,
+        (change) => {
+          void session.queue.run(() => Promise.resolve(session.onExternal(change)));
+        },
+        ready,
+      );
     });
     return session;
   }

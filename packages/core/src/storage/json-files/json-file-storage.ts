@@ -269,18 +269,26 @@ export class JsonFileStorage implements WorldStorage {
     });
   }
 
-  watch(worldId: string, onChange: (change: ExternalChange) => void): () => void {
+  watch(
+    worldId: string,
+    onChange: (change: ExternalChange) => void,
+    onReady?: () => void,
+  ): () => void {
     const state = this.loaded.get(worldId);
     if (!state) throw new StorageError("not-loaded", worldId, `World ${worldId} isn't loaded`);
     let stopped = false;
-    const stop = watchFolder(state.root, (absolute) => {
-      void this.queue
-        .run(absolute, () => this.externalChange(state, absolute))
-        .then((change) => {
-          if (change && !stopped) onChange(change);
-        })
-        .catch(() => undefined);
-    });
+    const stop = watchFolder(
+      state.root,
+      (absolute) => {
+        void this.queue
+          .run(absolute, () => this.externalChange(state, absolute))
+          .then((change) => {
+            if (change && !stopped) onChange(change);
+          })
+          .catch(() => undefined);
+      },
+      onReady,
+    );
     return () => {
       stopped = true;
       stop();
