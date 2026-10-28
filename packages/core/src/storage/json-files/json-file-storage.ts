@@ -1,0 +1,378 @@
+import { join, relative, sep } from "node:path";
+import {
+  DOCUMENT_FOLDERS,
+  LIBRARY_FILES,
+  LIBRARY_KINDS,
+  PORTRAITS_FOLDER,
+  WORLD_FILE,
+  WorldFileSchema,
+  buildWorldJsonSchema,
+  documentFileName,
+  generateId as defaultGenerateId,
+  isDocumentKind,
+  parseRefKey,
+  refKey,
+  worldFolderName,
+  type DocumentKind,
+  type FileRef,
+  type Problem,
+} from "@dramatis-personae/schema";
+import { newWorldFiles } from "../../defaults.ts";
+import { fingerprint, serialize } from "../../serialize.ts";
+import { StorageError } from "../errors.ts";
+import { errorCode, nodeFileSystem, type FileSystem } from "../fs.ts";
+import type {
+  DocumentChange,
+  ExternalChange,
+  LoadedWorld,
+  RawFile,
+  StoredFile,
+  WorldStorage,
+  WorldSummary,
+  WriteResult,
+} from "../types.ts";
+import {
+  SCANNED_FOLDERS,
+  WORLDS_DIR,
+  assetPath,
+  isTempFile,
+  kindForPath,
+  pathForRef,
+} from "./paths.ts";
+import { parseFile } from "./read.ts";
+import { watchFolder } from "./watch.ts";
+import { PathQueue, removeFile, writeAtomic } from "./write.ts";
+
+export interface JsonFileStorageOptions {
+  /** The data root holding Data/, Backups/ and so on. */
+  dataRoot: string;
+  fs?: FileSystem;
+  generateId?: () => string;
+  sleep?: (ms: number) => Promise<void>;
+}
+
+type ReadResult = { ok: true; file: StoredFile } | { ok: false; problem: Problem };
+
+/** What the adapter remembers about a loaded world. */
+interface WorldState {
+  /** Absolute path of the world folder. */
+  root: string;
+  /** World-relative path per refKey. */
+  paths: Map<string, string>;
+}
+
+export class JsonFileStorage implements WorldStorage {
+  protected readonly fs: FileSystem;
+  protected readonly dataRoot: string;
+  protected readonly generateId: () => string;
+  protected readonly sleep: (ms: number) => Promise<void>;
+  protected readonly loaded = new Map<string, WorldState>();
+  protected readonly queue = new PathQueue();
+  /** Fingerprint of the last text the app wrote, per absolute path. */
+  protected readonly ownWrites = new Map<string, string>();
+  /** Absolute paths the app has just deleted. */
+  protected readonly ownDeletes = new Set<string>();
+
+  constructor(options: JsonFileStorageOptions) {
+    this.dataRoot = options.dataRoot;
+    this.fs = options.fs ?? nodeFileSystem;
+    this.generateId = options.generateId ?? defaultGenerateId;
+    this.sleep = options.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+  }
+
+  protected get worldsDir(): string {
+    return join(this.dataRoot, ...WORLDS_DIR);
+  }
+
+  async listWorlds(): Promise<WorldSummary[]> {
+    const worlds: WorldSummary[] = [];
+    for (const folder of await this.list(this.worldsDir)) {
+      const bytes = await this.read(join(this.worldsDir, folder, WORLD_FILE));
+      if (!bytes) continue;
+      try {
+        const world = WorldFileSchema.parse(JSON.parse(new TextDecoder().decode(bytes)));
+        worlds.push({ id: world.id, name: world.name, folder, schemaVersion: world.schemaVersion });
+      } catch {
+        // A folder without a valid world.json isn't a world.
+      }
+    }
+    return worlds;
+  }
+
+  async createWorld(init: { name: string }): Promise<string> {
+    const files = newWorldFiles(init.name, this.generateId);
+    const root = join(this.worldsDir, worldFolderName(init.name, files.world.id));
+    for (const folder of [...Object.values(DOCUMENT_FOLDERS), PORTRAITS_FOLDER]) {
+      await this.fs.mkdir(join(root, folder), { recursive: true });
+    }
+    const put = (relative: string, data: unknown) =>
+      writeAtomic(this.fs, join(root, relative), serialize(data));
+    await put(WORLD_FILE, files.world);
+    await put(LIBRARY_FILES.fields, files.fields);
+    await put(LIBRARY_FILES.roles, files.roles);
+    await put(LIBRARY_FILES.relationshipTypes, files.relationshipTypes);
+    await put(LIBRARY_FILES.templates, files.templates);
+    await put(
+      `${DOCUMENT_FOLDERS.view}/${documentFileName(files.mainView.name, files.mainView.id)}`,
+      files.mainView,
+    );
+    await put("world.schema.json", buildWorldJsonSchema(files.fields.fields));
+    return files.world.id;
+  }
+
+  async loadWorld(worldId: string): Promise<LoadedWorld> {
+    const folder = await this.folderFor(worldId);
+    const root = join(this.worldsDir, folder);
+    await this.removeTempFiles(root);
+
+    const files: StoredFile[] = [];
+    const problems: Problem[] = [];
+    const paths = new Map<string, string>();
+    const add = (file: StoredFile) => {
+      files.push(file);
+      paths.set(refKey(file.ref), file.path);
+    };
+
+    const world = await this.readFile(root, WORLD_FILE, { kind: "world" });
+    if (!world.ok) {
+      throw new StorageError("io", WORLD_FILE, `world.json is invalid: ${world.problem.message}`);
+    }
+    add(world.file);
+
+    for (const kind of LIBRARY_KINDS) {
+      const path = LIBRARY_FILES[kind];
+      if (!(await this.read(join(root, path)))) continue;
+      const result = await this.readFile(root, path, { kind });
+      if (result.ok) add(result.file);
+      else problems.push(result.problem);
+    }
+
+    for (const [kind, sub] of Object.entries(DOCUMENT_FOLDERS) as [DocumentKind, string][]) {
+      const names = (await this.list(join(root, sub)))
+        .filter((name) => name.endsWith(".json") && !isTempFile(name))
+        .sort();
+      for (const name of names) {
+        const path = `${sub}/${name}`;
+        const result = await this.readDocument(root, path, kind);
+        if (!result.ok) {
+          problems.push(result.problem);
+        } else if (paths.has(refKey(result.file.ref))) {
+          problems.push({
+            code: "duplicate-id",
+            path,
+            message: `Same id as ${paths.get(refKey(result.file.ref))}`,
+            ref: result.file.ref,
+            fix: "assignNewId",
+          });
+        } else {
+          add(result.file);
+        }
+      }
+    }
+
+    const assets = (await this.list(join(root, PORTRAITS_FOLDER))).filter((n) => !isTempFile(n));
+    const schemaVersion = (world.file.data as { schemaVersion: number }).schemaVersion;
+    this.loaded.set(worldId, { root, paths });
+    return { worldId, folder, schemaVersion, files, assets, problems };
+  }
+
+  async write(worldId: string, changes: DocumentChange[]): Promise<WriteResult> {
+    const state = this.loaded.get(worldId);
+    if (!state) throw new StorageError("not-loaded", worldId, `World ${worldId} isn't loaded`);
+    const fingerprints: Record<string, string | null> = {};
+
+    for (const change of changes) {
+      if (change.op === "put") {
+        const key = refKey(change.ref);
+        const path = pathForRef(change.ref, change.fileName);
+        const previous = state.paths.get(key);
+        await this.putText(state.root, path, change.text);
+        if (previous !== undefined && previous !== path) await this.remove(state.root, previous);
+        state.paths.set(key, path);
+        fingerprints[key] = fingerprint(change.text);
+      } else if (change.op === "delete") {
+        const key = refKey(change.ref);
+        const path = state.paths.get(key);
+        if (path !== undefined) await this.remove(state.root, path);
+        state.paths.delete(key);
+        fingerprints[key] = null;
+      } else if (change.op === "putAsset") {
+        const path = assetPath(change.fileName);
+        await this.queue.run(join(state.root, path), () =>
+          writeAtomic(this.fs, join(state.root, path), change.bytes, this.sleep),
+        );
+      } else {
+        await this.remove(state.root, assetPath(change.fileName));
+      }
+    }
+    return { fingerprints };
+  }
+
+  /** Atomically writes a world file and remembers it as the app's own write. */
+  protected putText(root: string, path: string, text: string): Promise<void> {
+    const absolute = join(root, path);
+    return this.queue.run(absolute, async () => {
+      this.ownWrites.set(absolute, fingerprint(text));
+      await writeAtomic(this.fs, absolute, text, this.sleep);
+    });
+  }
+
+  protected remove(root: string, path: string): Promise<void> {
+    const absolute = join(root, path);
+    return this.queue.run(absolute, async () => {
+      this.ownDeletes.add(absolute);
+      this.ownWrites.delete(absolute);
+      await removeFile(this.fs, absolute, this.sleep);
+    });
+  }
+
+  watch(worldId: string, onChange: (change: ExternalChange) => void): () => void {
+    const state = this.loaded.get(worldId);
+    if (!state) throw new StorageError("not-loaded", worldId, `World ${worldId} isn't loaded`);
+    let stopped = false;
+    const stop = watchFolder(state.root, (absolute) => {
+      void this.queue
+        .run(absolute, () => this.externalChange(state, absolute))
+        .then((change) => {
+          if (change && !stopped) onChange(change);
+        })
+        .catch(() => undefined);
+    });
+    return () => {
+      stopped = true;
+      stop();
+    };
+  }
+
+  /** Works out what an outside change to one file means, or null if it was the app's own. */
+  protected async externalChange(
+    state: WorldState,
+    absolute: string,
+  ): Promise<ExternalChange | null> {
+    const path = relative(state.root, absolute).split(sep).join("/");
+    const kind = kindForPath(path);
+    if (!kind) return null;
+
+    const bytes = await this.read(absolute);
+    if (!bytes) {
+      if (this.ownDeletes.delete(absolute)) return null;
+      const key = [...state.paths].find(([, p]) => p === path)?.[0];
+      if (key === undefined) return null;
+      state.paths.delete(key);
+      return { type: "remove", path, ref: parseRefKey(key) };
+    }
+    this.ownDeletes.delete(absolute);
+    if (this.ownWrites.get(absolute) === fingerprint(bytes)) return null;
+
+    const result = isDocumentKind(kind)
+      ? await this.readDocument(state.root, path, kind, bytes)
+      : await this.readFile(state.root, path, { kind });
+    if (!result.ok) return { type: "invalid", path, problem: result.problem };
+
+    const key = refKey(result.file.ref);
+    const known = state.paths.get(key);
+    if (known !== undefined && known !== path && (await this.read(join(state.root, known)))) {
+      return {
+        type: "invalid",
+        path,
+        problem: {
+          code: "duplicate-id",
+          path,
+          message: `Same id as ${known}`,
+          ref: result.file.ref,
+          fix: "assignNewId",
+        },
+      };
+    }
+    state.paths.set(key, path);
+    return { type: "upsert", file: result.file };
+  }
+
+  loadRaw(_worldId: string): Promise<RawFile[]> {
+    return Promise.reject(new Error("loadRaw is not implemented yet"));
+  }
+
+  writeRaw(_worldId: string, _files: RawFile[]): Promise<void> {
+    return Promise.reject(new Error("writeRaw is not implemented yet"));
+  }
+
+  backup(_worldId: string): Promise<string> {
+    return Promise.reject(new Error("backup is not implemented yet"));
+  }
+
+  protected async folderFor(worldId: string): Promise<string> {
+    const world = (await this.listWorlds()).find((w) => w.id === worldId);
+    if (!world) throw new StorageError("not-found", worldId, `No world with id ${worldId}`);
+    return world.folder;
+  }
+
+  /** Reads and validates the world or a library file. */
+  protected async readFile(root: string, path: string, ref: FileRef): Promise<ReadResult> {
+    const bytes = (await this.read(join(root, path))) ?? new Uint8Array();
+    const parsed = parseFile(path, ref.kind, bytes);
+    if (!parsed.ok) return parsed;
+    return { ok: true, file: { path, ref, data: parsed.data, fingerprint: parsed.fingerprint } };
+  }
+
+  /** Reads and validates a document, assigning and writing back an id if it has none. */
+  protected async readDocument(
+    root: string,
+    path: string,
+    kind: DocumentKind,
+    /** Bytes already read, when called from inside this path's write queue. */
+    known?: Uint8Array,
+  ): Promise<ReadResult> {
+    const bytes = known ?? (await this.read(join(root, path))) ?? new Uint8Array();
+    const parsed = parseFile(path, kind, bytes);
+    if (!parsed.ok) return parsed;
+    if (!parsed.missingId) {
+      const id = parsed.data.id as string;
+      const file = { path, ref: { kind, id }, data: parsed.data, fingerprint: parsed.fingerprint };
+      return { ok: true, file };
+    }
+    const { $schema, ...rest } = parsed.data;
+    const data = { $schema, id: this.generateId(), ...rest };
+    const text = serialize(data);
+    if (known) {
+      // Already inside this path's queue: queuing again would wait on ourselves.
+      const absolute = join(root, path);
+      this.ownWrites.set(absolute, fingerprint(text));
+      await writeAtomic(this.fs, absolute, text, this.sleep);
+    } else {
+      await this.putText(root, path, text);
+    }
+    return {
+      ok: true,
+      file: { path, ref: { kind, id: data.id }, data, fingerprint: fingerprint(text) },
+    };
+  }
+
+  protected async removeTempFiles(root: string): Promise<void> {
+    for (const sub of SCANNED_FOLDERS) {
+      for (const name of await this.list(join(root, sub))) {
+        if (isTempFile(name)) await this.fs.unlink(join(root, sub, name)).catch(() => undefined);
+      }
+    }
+  }
+
+  /** Directory entries, or [] if the directory doesn't exist. */
+  protected async list(dir: string): Promise<string[]> {
+    try {
+      return await this.fs.readdir(dir);
+    } catch (error) {
+      if (errorCode(error) === "ENOENT") return [];
+      throw error;
+    }
+  }
+
+  /** File bytes, or undefined if the file doesn't exist. */
+  protected async read(path: string): Promise<Uint8Array | undefined> {
+    try {
+      return await this.fs.readFile(path);
+    } catch (error) {
+      const code = errorCode(error);
+      if (code === "ENOENT" || code === "EISDIR") return undefined;
+      throw error;
+    }
+  }
+}

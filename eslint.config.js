@@ -18,7 +18,16 @@ export default tseslint.config(
     plugins: { "import-x": importX },
     rules: {
       "import-x/no-extraneous-dependencies": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
+  },
+  {
+    // Vitest's asymmetric matchers (expect.any, expect.stringMatching…) are typed as any.
+    files: ["**/*.test.ts"],
+    rules: { "@typescript-eslint/no-unsafe-assignment": "off" },
   },
   {
     files: ["**/*.js"],

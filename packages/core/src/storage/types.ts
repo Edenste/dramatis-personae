@@ -1,0 +1,62 @@
+import type { FileRef, Problem } from "@dramatis-personae/schema";
+
+export interface WorldSummary {
+  id: string;
+  name: string;
+  /** Folder name inside Data/worlds/. */
+  folder: string;
+  schemaVersion: number;
+}
+
+export interface StoredFile {
+  /** Relative to the world folder, with forward slashes. */
+  path: string;
+  ref: FileRef;
+  /** Already validated against FILE_SCHEMAS[ref.kind]. */
+  data: unknown;
+  fingerprint: string;
+}
+
+export interface LoadedWorld {
+  worldId: string;
+  folder: string;
+  schemaVersion: number;
+  files: StoredFile[];
+  /** Portrait file names in assets/portraits/. */
+  assets: string[];
+  problems: Problem[];
+}
+
+export type DocumentChange =
+  /** `fileName` is the bare file name for documents; ignored for the world and libraries. */
+  | { op: "put"; ref: FileRef; fileName: string; text: string }
+  | { op: "delete"; ref: FileRef }
+  | { op: "putAsset"; fileName: string; bytes: Uint8Array }
+  | { op: "deleteAsset"; fileName: string };
+
+export interface WriteResult {
+  /** New fingerprint per refKey; null for deleted files. */
+  fingerprints: Record<string, string | null>;
+}
+
+export type ExternalChange =
+  | { type: "upsert"; file: StoredFile }
+  | { type: "invalid"; path: string; problem: Problem }
+  | { type: "remove"; path: string; ref: FileRef };
+
+export interface RawFile {
+  path: string;
+  text: string;
+}
+
+export interface WorldStorage {
+  listWorlds(): Promise<WorldSummary[]>;
+  createWorld(init: { name: string }): Promise<string>;
+  loadWorld(worldId: string): Promise<LoadedWorld>;
+  write(worldId: string, changes: DocumentChange[]): Promise<WriteResult>;
+  watch(worldId: string, onChange: (change: ExternalChange) => void): () => void;
+  loadRaw(worldId: string): Promise<RawFile[]>;
+  writeRaw(worldId: string, files: RawFile[]): Promise<void>;
+  /** Zips the whole world into Backups/ and returns the zip's path. */
+  backup(worldId: string): Promise<string>;
+}

@@ -10,9 +10,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@dramatis-personae/schema": "workspace:*"
+    "@dramatis-personae/schema": "workspace:*",
+    "chokidar": "^4.0.3"
   },
   "devDependencies": {
+    "@dramatis-personae/samples": "workspace:*",
     "vitest": "^5.0.5"
   }
 }
