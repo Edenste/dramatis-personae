@@ -1,5 +1,5 @@
 {
-  "$schema": "../world.schema.json#/$defs/view",
+  "$schema": "../schemas/view.schema.json",
   "id": "6qng2iql80g5bp0p",
   "name": "Main",
   "camera": {

@@ -2,7 +2,12 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { worldFolderName } from "@dramatis-personae/schema";
+import {
+  FILE_KINDS,
+  SCHEMAS_FOLDER,
+  schemaFileName,
+  worldFolderName,
+} from "@dramatis-personae/schema";
 import { CAMELOT_IDS } from "@dramatis-personae/samples";
 import { defineStorageContract } from "../contract.ts";
 import { StorageError } from "../errors.ts";
@@ -49,13 +54,17 @@ describe("JsonFileStorage loading", () => {
     ]) {
       expect(existsSync(join(folder, sub)), sub).toBe(true);
     }
-    expect(existsSync(join(folder, "world.schema.json"))).toBe(true);
+    for (const kind of FILE_KINDS) {
+      expect(existsSync(join(folder, SCHEMAS_FOLDER, schemaFileName(kind))), kind).toBe(true);
+    }
+    expect(existsSync(join(folder, "world.schema.json"))).toBe(false);
+    expect((await storage.loadWorld(id)).problems).toEqual([]);
   });
 
   it("reports broken JSON with its line and leaves the document out", async () => {
     await writeFile(
       join(characters(), "broken.json"),
-      '{\n  "$schema": "../world.schema.json",\n  "id": "zzzzzzzzzzzzzzzz" "name": "Kay"\n}\n',
+      '{\n  "$schema": "../schemas/character.schema.json",\n  "id": "zzzzzzzzzzzzzzzz" "name": "Kay"\n}\n',
     );
     const world = await storage.loadWorld(camelot.worldId);
     expect(world.problems).toEqual([

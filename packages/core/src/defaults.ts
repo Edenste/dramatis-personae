@@ -1,6 +1,10 @@
 import {
   CURRENT_SCHEMA_VERSION,
+  FILE_KINDS,
+  SCHEMAS_FOLDER,
+  buildWorldJsonSchemas,
   generateId as defaultGenerateId,
+  schemaFileName,
   schemaRefFor,
   type FieldDefinition,
   type FieldsFile,
@@ -102,4 +106,13 @@ export function newWorldFiles(name: string, generateId = defaultGenerateId): New
     templates: { $schema: schemaRefFor("templates"), templates: [] },
     mainView,
   };
+}
+
+/** The generated `schemas/` files for a world with these fields, as world-relative paths. */
+export function schemaFiles(fields: FieldDefinition[]): Array<{ path: string; data: unknown }> {
+  const schemas = buildWorldJsonSchemas(fields);
+  return FILE_KINDS.map((kind) => ({
+    path: `${SCHEMAS_FOLDER}/${schemaFileName(kind)}`,
+    data: schemas[kind],
+  }));
 }

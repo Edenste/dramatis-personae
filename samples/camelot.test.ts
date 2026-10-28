@@ -6,7 +6,10 @@ import {
   FILE_SCHEMAS,
   LIBRARY_FILES,
   WORLD_FILE,
-  buildWorldJsonSchema,
+  buildWorldJsonSchemas,
+  FILE_KINDS,
+  SCHEMAS_FOLDER,
+  schemaFileName,
   schemaRefFor,
   type FileKind,
 } from "@dramatis-personae/schema";
@@ -72,10 +75,14 @@ describe("Camelot sample world", () => {
     }
   });
 
-  it("ships a world.schema.json generated from its fields", () => {
+  it("ships one schema per kind in schemas/, generated from its fields", () => {
     const fields = FILE_SCHEMAS.fields.parse(readJson(join(CAMELOT_PATH, "fields.json")).data);
-    expect(readJson(join(CAMELOT_PATH, "world.schema.json")).data).toEqual(
-      buildWorldJsonSchema(fields.fields),
-    );
+    const schemas = buildWorldJsonSchemas(fields.fields);
+    for (const kind of FILE_KINDS) {
+      expect(readJson(join(CAMELOT_PATH, SCHEMAS_FOLDER, schemaFileName(kind))).data, kind).toEqual(
+        schemas[kind],
+      );
+    }
+    expect(existsSync(join(CAMELOT_PATH, "world.schema.json"))).toBe(false);
   });
 });

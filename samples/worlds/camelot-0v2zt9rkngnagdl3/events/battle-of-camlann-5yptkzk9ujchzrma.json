@@ -1,5 +1,5 @@
 {
-  "$schema": "../world.schema.json#/$defs/event",
+  "$schema": "../schemas/event.schema.json",
   "id": "5yptkzk9ujchzrma",
   "title": "Battle of Camlann",
   "date": {

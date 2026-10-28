@@ -1,5 +1,5 @@
 {
-  "$schema": "./world.schema.json#/$defs/templates",
+  "$schema": "./schemas/templates.schema.json",
   "templates": [
     {
       "id": "8q3y3tjaoi1mj28c",

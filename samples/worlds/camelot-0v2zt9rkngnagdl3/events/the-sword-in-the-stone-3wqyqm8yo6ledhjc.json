@@ -1,5 +1,5 @@
 {
-  "$schema": "../world.schema.json#/$defs/event",
+  "$schema": "../schemas/event.schema.json",
   "id": "3wqyqm8yo6ledhjc",
   "title": "The Sword in the Stone",
   "date": {

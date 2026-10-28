@@ -1,5 +1,5 @@
 {
-  "$schema": "../world.schema.json#/$defs/character",
+  "$schema": "../schemas/character.schema.json",
   "id": "yonfljj4r2k6hu4z",
   "name": "Morgan le Fay",
   "color": null,

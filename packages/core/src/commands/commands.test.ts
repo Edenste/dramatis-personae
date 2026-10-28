@@ -80,7 +80,7 @@ describe("character commands", () => {
     expect(put.ref.id).toMatch(/^[a-z0-9]{16}$/);
     expect(put.fileName).toBe(documentFileName("Ector", put.ref.id));
     expect(JSON.parse(put.text)).toMatchObject({
-      $schema: "../world.schema.json#/$defs/character",
+      $schema: "../schemas/character.schema.json",
     });
   });
 

@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]{16}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "color": {
+      "default": null,
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "roles": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]{16}$"
+      }
+    },
+    "templates": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]{16}$"
+      }
+    },
+    "extraFields": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fields": {
+      "type": "object",
+      "properties": {
+        "birthday": {
+          "type": "object",
+          "properties": {
+            "calendar": {
+              "type": "string",
+              "minLength": 1
+            },
+            "year": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "month": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "day": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 31
+            }
+          },
+          "required": [
+            "calendar"
+          ],
+          "additionalProperties": {},
+          "title": "Birthday"
+        },
+        "title": {
+          "type": "string",
+          "title": "Title"
+        },
+        "bloodType": {
+          "type": "string",
+          "enum": [
+            "A",
+            "B",
+            "AB",
+            "O"
+          ],
+          "title": "Blood type"
+        },
+        "liege": {
+          "type": "string",
+          "title": "Liege"
+        },
+        "weapon": {
+          "type": "string",
+          "title": "Weapon"
+        },
+        "steed": {
+          "type": "string",
+          "title": "Steed"
+        }
+      },
+      "additionalProperties": true
+    },
+    "portrait": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^/\\\\]+$"
+        },
+        "crop": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "size": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "x",
+            "y",
+            "size"
+          ],
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "file",
+        "crop"
+      ],
+      "additionalProperties": {}
+    },
+    "body": {
+      "default": "",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "name"
+  ],
+  "additionalProperties": {}
+}

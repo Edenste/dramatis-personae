@@ -1,5 +1,5 @@
 {
-  "$schema": "../world.schema.json#/$defs/relationship",
+  "$schema": "../schemas/relationship.schema.json",
   "id": "qsnynrdlrsfg1ul5",
   "a": "vray3h83xfszbo6d",
   "b": "2mxafd1whkfr51wp",

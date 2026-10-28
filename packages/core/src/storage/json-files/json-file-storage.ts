@@ -5,8 +5,8 @@ import {
   LIBRARY_FILES,
   LIBRARY_KINDS,
   PORTRAITS_FOLDER,
+  SCHEMAS_FOLDER,
   WORLD_FILE,
-  buildWorldJsonSchema,
   documentFileName,
   generateId as defaultGenerateId,
   isDocumentKind,
@@ -18,7 +18,7 @@ import {
   type Problem,
   type WorldFile,
 } from "@dramatis-personae/schema";
-import { newWorldFiles } from "../../defaults.ts";
+import { newWorldFiles, schemaFiles } from "../../defaults.ts";
 import { fingerprint, serialize } from "../../serialize.ts";
 import { StorageError } from "../errors.ts";
 import { errorCode, nodeFileSystem, type FileSystem } from "../fs.ts";
@@ -121,7 +121,7 @@ export class JsonFileStorage implements WorldStorage {
   async createWorld(init: { name: string }): Promise<string> {
     const files = newWorldFiles(init.name, this.generateId);
     const root = join(this.worldsDir, worldFolderName(init.name, files.world.id));
-    for (const folder of [...Object.values(DOCUMENT_FOLDERS), PORTRAITS_FOLDER]) {
+    for (const folder of [...Object.values(DOCUMENT_FOLDERS), PORTRAITS_FOLDER, SCHEMAS_FOLDER]) {
       await this.fs.mkdir(join(root, folder), { recursive: true });
     }
     const put = (relative: string, data: unknown) =>
@@ -135,7 +135,7 @@ export class JsonFileStorage implements WorldStorage {
       `${DOCUMENT_FOLDERS.view}/${documentFileName(files.mainView.name, files.mainView.id)}`,
       files.mainView,
     );
-    await put("world.schema.json", buildWorldJsonSchema(files.fields.fields));
+    for (const file of schemaFiles(files.fields.fields)) await put(file.path, file.data);
     return files.world.id;
   }
 

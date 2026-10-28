@@ -8,14 +8,14 @@ const other = "c1a9m3x8k2q7v5w0";
 // The examples from spec §5, one per file kind.
 const examples = {
   world: {
-    $schema: "./world.schema.json",
+    $schema: "./schemas/world.schema.json",
     id: "x1y2z3w4v5u6t7s8",
     name: "Camelot",
     schemaVersion: 1,
     mainView: "v9x2k7m4q1r8w3t5",
   },
   character: {
-    $schema: "../world.schema.json",
+    $schema: "../schemas/character.schema.json",
     id,
     name: "Lancelot",
     color: null,

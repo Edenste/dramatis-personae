@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]{16}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "camera": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "zoom": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "zoom"
+      ],
+      "additionalProperties": {}
+    },
+    "focus": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-z0-9]{16}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "depth": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "filters": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    },
+    "clustering": {
+      "type": "string",
+      "enum": [
+        "highest",
+        "all"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "camera",
+    "focus",
+    "depth",
+    "clustering"
+  ],
+  "additionalProperties": {}
+}

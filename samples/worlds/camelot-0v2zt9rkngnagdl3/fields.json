@@ -1,5 +1,5 @@
 {
-  "$schema": "./world.schema.json#/$defs/fields",
+  "$schema": "./schemas/fields.schema.json",
   "fields": [
     {
       "key": "birthday",

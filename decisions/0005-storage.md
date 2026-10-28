@@ -32,7 +32,7 @@ FoundryVTT, a reference for the folder layout, used NeDB (JSON-lines files) up t
 ├── Config/options.json           port, listen address, data path, …
 ├── Data/worlds/<name>-<id>/
 │   ├── world.json                manifest: name, schema version, main view
-│   ├── world.schema.json         generated JSON Schema for this world's documents
+│   ├── schemas/                  generated JSON Schema, one file per kind
 │   ├── fields.json               the world's field library
 │   ├── roles.json
 │   ├── relationship-types.json
@@ -53,7 +53,7 @@ File names, IDs and the shape of each document are set out in [0010](0010-world-
 
 - The server watches the world folder and reloads files that change while it runs.
 - Every file is validated on load. An invalid file is reported with its path and the problem, and the rest of the world keeps working.
-- Each world gets a generated `world.schema.json` covering built-in and custom fields; documents reference it with `$schema`, so editors can autocomplete and validate.
+- Each world gets a generated `schemas/` folder with one JSON Schema per file kind (`character.schema.json`, `roles.schema.json` and so on), covering built-in and custom fields. Each file points to the schema for its kind with `$schema`, so editors can autocomplete and validate. The link has no `#` fragment, because VS Code reads a fragment in `$schema` as part of the file name.
 - Field keys are readable (`"bloodType"`). Documents use generated IDs, with a readable name in the file name ([0010](0010-world-data-model.md)).
 - Writes are atomic: write to a temporary file, then rename over the original.
 - If a file changes on disk while the same document has unsaved edits in the app, the user chooses which version to keep.
@@ -76,7 +76,7 @@ Adding a field from a single character's profile creates a library definition wi
 ] }
 
 // characters/merlin-c1a9m3x8k2q7v5w0.json (abridged; full shape in 0010)
-{ "$schema": "../world.schema.json", "id": "c1a9m3x8k2q7v5w0", "name": "Merlin",
+{ "$schema": "../schemas/character.schema.json", "id": "c1a9m3x8k2q7v5w0", "name": "Merlin",
   "extraFields": ["bloodType"], "fields": { "age": 312, "bloodType": "O" } }
 ```
 

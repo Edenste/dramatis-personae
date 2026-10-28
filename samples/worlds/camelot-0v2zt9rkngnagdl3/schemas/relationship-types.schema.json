@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "types": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]{16}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "two-way",
+              "one-way"
+            ]
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "line": {
+            "type": "object",
+            "properties": {
+              "style": {
+                "type": "string",
+                "enum": [
+                  "solid",
+                  "dashed",
+                  "dotted"
+                ]
+              },
+              "weight": {
+                "type": "string",
+                "enum": [
+                  "thin",
+                  "normal",
+                  "thick"
+                ]
+              }
+            },
+            "required": [
+              "style",
+              "weight"
+            ],
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "direction",
+          "color",
+          "line"
+        ],
+        "additionalProperties": {}
+      }
+    }
+  },
+  "required": [
+    "types"
+  ],
+  "additionalProperties": {}
+}

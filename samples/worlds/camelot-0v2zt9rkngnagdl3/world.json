@@ -1,5 +1,5 @@
 {
-  "$schema": "./world.schema.json#/$defs/world",
+  "$schema": "./schemas/world.schema.json",
   "id": "0v2zt9rkngnagdl3",
   "name": "Camelot",
   "schemaVersion": 1,

@@ -1,5 +1,5 @@
 {
-  "$schema": "../world.schema.json#/$defs/character",
+  "$schema": "../schemas/character.schema.json",
   "id": "f7khwc5501kc2akj",
   "name": "Merlin",
   "color": null,

@@ -4,7 +4,6 @@ import {
   FieldsFileSchema,
   LIBRARY_FILES,
   WORLD_FILE,
-  buildWorldJsonSchema,
   type Problem,
 } from "@dramatis-personae/schema";
 import {
@@ -13,6 +12,7 @@ import {
   type MigratableFile,
   type Migration,
 } from "./migrations/migrations.ts";
+import { schemaFiles } from "./defaults.ts";
 import { WorldModel } from "./model/world-model.ts";
 import { serialize } from "./serialize.ts";
 import { kindForPath } from "./storage/json-files/paths.ts";
@@ -114,13 +114,13 @@ export async function openWorld(
     );
     validate(migrated, version, target);
     const fields = migrated.find((f) => f.path === LIBRARY_FILES.fields)?.data;
-    const schema = buildWorldJsonSchema(FieldsFileSchema.safeParse(fields).data?.fields ?? []);
+    const schemas = schemaFiles(FieldsFileSchema.safeParse(fields).data?.fields ?? []);
     const text = (file: MigratableFile) => ({ path: file.path, text: serialize(file.data) });
     // world.json goes last: if any other write fails, the world still says it's
     // at the old version and is migrated again next time.
     await storage.writeRaw(worldId, [
       ...migrated.filter((f) => f.path !== WORLD_FILE).map(text),
-      { path: "world.schema.json", text: serialize(schema) },
+      ...schemas.map((file) => ({ path: file.path, text: serialize(file.data) })),
       ...migrated.filter((f) => f.path === WORLD_FILE).map(text),
     ]);
   }

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]{16}$"
+    },
+    "a": {
+      "type": "string",
+      "pattern": "^[a-z0-9]{16}$"
+    },
+    "b": {
+      "type": "string",
+      "pattern": "^[a-z0-9]{16}$"
+    },
+    "twoWay": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]{16}$"
+      }
+    },
+    "aToB": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]{16}$"
+      }
+    },
+    "bToA": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]{16}$"
+      }
+    },
+    "notes": {
+      "default": {
+        "a": "",
+        "b": ""
+      },
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": "string"
+        },
+        "b": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "a",
+        "b"
+      ],
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "id",
+    "a",
+    "b"
+  ],
+  "additionalProperties": {}
+}

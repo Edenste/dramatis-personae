@@ -1,5 +1,5 @@
 {
-  "$schema": "../world.schema.json#/$defs/event",
+  "$schema": "../schemas/event.schema.json",
   "id": "fgm9ao12t5jd89m9",
   "title": "Battle of Badon",
   "date": {
