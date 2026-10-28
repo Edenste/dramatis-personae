@@ -122,6 +122,110 @@ describe("character commands", () => {
   });
 });
 
+describe("restore input", () => {
+  const kayData = () => camelot.get("character", C.Kay!)!;
+
+  it.each(["../../escaped.json", "a/b.json", "..\\x.json"])(
+    "refuses a file name that leaves its folder: %s",
+    (fileName) => {
+      const result = applyBatch(
+        camelot,
+        { commands: [{ type: "restore", files: [{ ref: kay, fileName, data: kayData() }] }] },
+        owner,
+      );
+      expect(result).toMatchObject({ ok: false, error: { code: "invalid" } });
+    },
+  );
+
+  it("refuses data whose id doesn't match its ref", () => {
+    const result = applyBatch(
+      camelot,
+      {
+        commands: [
+          {
+            type: "restore",
+            files: [{ ref: kay, fileName: "kay.json", data: { ...kayData(), id: C.Arthur } }],
+          },
+        ],
+      },
+      owner,
+    );
+    expect(result).toMatchObject({ ok: false, error: { code: "invalid" } });
+  });
+
+  it("refuses to change the world's id", () => {
+    const result = applyBatch(
+      camelot,
+      {
+        commands: [
+          {
+            type: "restore",
+            files: [
+              {
+                ref: { kind: "world" },
+                fileName: null,
+                data: { ...camelot.world, id: "zzzzzzzzzzzzzzzz" },
+              },
+            ],
+          },
+        ],
+      },
+      owner,
+    );
+    expect(result).toMatchObject({ ok: false, error: { code: "invalid" } });
+  });
+
+  it("fills in defaults for minimal data instead of crashing", () => {
+    const result = apply(camelot, {
+      commands: [
+        {
+          type: "restore",
+          files: [{ ref: kay, fileName: "kay.json", data: { id: C.Kay, name: "Kay" } }],
+        },
+      ],
+    });
+    expect(result.model.get("character", C.Kay!)?.roles).toEqual([]);
+  });
+
+  it("refuses a malformed expect key", () => {
+    const result = applyBatch(
+      camelot,
+      { commands: [{ type: "world.rename", name: "Logres" }], expect: { "not a key": null } },
+      owner,
+    );
+    expect(result).toMatchObject({ ok: false, error: { code: "invalid" } });
+  });
+
+  it("refuses a portrait file name that leaves the portraits folder", () => {
+    const result = applyBatch(
+      camelot,
+      {
+        commands: [
+          {
+            type: "character.update",
+            id: C.Kay!,
+            set: { portrait: { file: "../../x.png", crop: { x: 0, y: 0, size: 1 } } },
+          },
+        ],
+      },
+      owner,
+    );
+    expect(result).toMatchObject({ ok: false, error: { code: "invalid" } });
+  });
+});
+
+describe("nested extra keys", () => {
+  it("survive an unrelated edit", () => {
+    const model = editFile(camelot, { kind: "character", id: C.Arthur! }, (d) => {
+      (d.portrait as { crop: Record<string, unknown> }).crop.rotation = 90;
+    });
+    const { model: after } = apply(model, {
+      commands: [{ type: "character.update", id: C.Arthur!, set: { body: "New text" } }],
+    });
+    expect(after.get("character", C.Arthur!)?.portrait?.crop).toMatchObject({ rotation: 90 });
+  });
+});
+
 describe("validation and refusals", () => {
   it("applies nothing when any command in the batch is invalid", () => {
     const before = camelot.snapshot();

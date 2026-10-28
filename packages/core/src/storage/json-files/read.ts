@@ -10,8 +10,24 @@ export type ParsedFile =
   | { ok: true; data: Record<string, unknown>; fingerprint: string; missingId: boolean }
   | { ok: false; problem: Problem };
 
-// TextDecoder drops a leading UTF-8 byte-order mark.
-const decoder = new TextDecoder("utf-8");
+export type DecodedText = { ok: true; text: string } | { ok: false; message: string };
+
+/**
+ * Decodes a file's bytes. UTF-8 is expected (a byte-order mark is dropped);
+ * UTF-16 with a byte-order mark, as some Windows tools write, is accepted too.
+ * Anything else is refused rather than silently garbled.
+ */
+export function decodeText(bytes: Uint8Array): DecodedText {
+  try {
+    if (bytes[0] === 0xff && bytes[1] === 0xfe)
+      return { ok: true, text: new TextDecoder("utf-16le").decode(bytes) };
+    if (bytes[0] === 0xfe && bytes[1] === 0xff)
+      return { ok: true, text: new TextDecoder("utf-16be").decode(bytes) };
+    return { ok: true, text: new TextDecoder("utf-8", { fatal: true }).decode(bytes) };
+  } catch {
+    return { ok: false, message: "The file isn't UTF-8 text. Save it as UTF-8 and it will load." };
+  }
+}
 
 function lineOf(error: unknown, text: string): number | undefined {
   const message = error instanceof Error ? error.message : "";
@@ -27,7 +43,10 @@ function lineOf(error: unknown, text: string): number | undefined {
  * `missingId: true` so the caller can assign one.
  */
 export function parseFile(path: string, kind: FileKind, bytes: Uint8Array): ParsedFile {
-  const text = decoder.decode(bytes);
+  const decoded = decodeText(bytes);
+  if (!decoded.ok)
+    return { ok: false, problem: { code: "invalid-json", path, message: decoded.message } };
+  const text = decoded.text;
   let json: unknown;
   try {
     json = JSON.parse(text);

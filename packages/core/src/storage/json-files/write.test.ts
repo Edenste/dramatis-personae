@@ -106,6 +106,48 @@ describe("JsonFileStorage writes", () => {
     expect((await readdir(characters())).filter((n) => n.endsWith(".tmp"))).toEqual([]);
   });
 
+  it("keeps the file when a rename only changes its capitalisation", async () => {
+    const file = (await readdir(characters())).find((n) => n.startsWith("kay-"))!;
+    const { rename } = await import("node:fs/promises");
+    await rename(
+      join(characters(), file),
+      join(characters(), file.toUpperCase().replace(".JSON", ".json")),
+    );
+    await storage.loadWorld(camelot.worldId);
+    await storage.write(camelot.worldId, [
+      { op: "put", ref: kay, fileName: file, text: kayText("Seneschal") },
+    ]);
+    const kays = (await readdir(characters())).filter((n) => n.toLowerCase() === file);
+    expect(kays).toEqual([file]);
+    expect(await readFile(join(characters(), file), "utf8")).toBe(kayText("Seneschal"));
+  });
+
+  it("leaves one file, with the last name, after two rapid renames", async () => {
+    await Promise.all([
+      storage.write(camelot.worldId, [
+        { op: "put", ref: kay, fileName: `sir-k-${kay.id}.json`, text: kayText("A") },
+      ]),
+      storage.write(camelot.worldId, [
+        { op: "put", ref: kay, fileName: `sir-kay-${kay.id}.json`, text: kayText("B") },
+      ]),
+    ]);
+    const kays = (await readdir(characters())).filter((n) => n.includes(kay.id));
+    expect(kays).toEqual([`sir-kay-${kay.id}.json`]);
+  });
+
+  it.each(["../escaped.json", "..\\escaped.json", "sub/escaped.json"])(
+    "refuses a file name that leaves its folder: %s",
+    async (fileName) => {
+      await expect(
+        storage.write(camelot.worldId, [{ op: "put", ref: kay, fileName, text: kayText("x") }]),
+      ).rejects.toMatchObject({ name: "StorageError", code: "io" });
+      await expect(
+        storage.write(camelot.worldId, [{ op: "putAsset", fileName, bytes: new Uint8Array([1]) }]),
+      ).rejects.toMatchObject({ name: "StorageError", code: "io" });
+      expect(existsSync(join(camelot.worldPath, "escaped.json"))).toBe(false);
+    },
+  );
+
   it("writes and deletes portraits", async () => {
     const portraits = join(camelot.worldPath, "assets", "portraits");
     await storage.write(camelot.worldId, [

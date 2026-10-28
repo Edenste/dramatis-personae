@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { PortraitSchema } from "./files/character.ts";
-import { ColourSchema, IdSchema } from "./files/common.ts";
-import { FileRefSchema } from "./refs.ts";
+import { ColourSchema, FileNameSchema, IdSchema } from "./files/common.ts";
+import { FileRefSchema, parseRefKey } from "./refs.ts";
 
 /** Character keys a command may set directly. */
 const CharacterSetSchema = z
@@ -47,7 +47,7 @@ export const CharacterDeleteSchema = z.object({
 export const RestoreSchema = z.object({
   type: z.literal("restore"),
   files: z.array(
-    z.object({ ref: FileRefSchema, fileName: z.string().nullable(), data: z.unknown() }),
+    z.object({ ref: FileRefSchema, fileName: FileNameSchema.nullable(), data: z.unknown() }),
   ),
 });
 
@@ -60,9 +60,18 @@ export const CommandSchema = z.discriminatedUnion("type", [
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 
+const RefKeySchema = z.string().refine((key) => {
+  try {
+    parseRefKey(key);
+    return true;
+  } catch {
+    return false;
+  }
+}, "must be a ref key such as character:<id>");
+
 export const CommandBatchSchema = z.object({
   commands: z.array(CommandSchema),
   /** Fingerprint each file must currently have, by ref key; null means it must not exist. */
-  expect: z.record(z.string(), z.string().nullable()).optional(),
+  expect: z.record(RefKeySchema, z.string().nullable()).optional(),
 });
 export type CommandBatch = z.infer<typeof CommandBatchSchema>;

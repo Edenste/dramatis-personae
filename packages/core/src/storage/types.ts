@@ -5,7 +5,10 @@ export interface WorldSummary {
   name: string;
   /** Folder name inside Data/worlds/. */
   folder: string;
-  schemaVersion: number;
+  /** Null when world.json can't be read. */
+  schemaVersion: number | null;
+  /** Why the world can't be opened as it is: a broken world.json or a duplicate id. */
+  problem?: string;
 }
 
 export interface StoredFile {

@@ -10,6 +10,6 @@ export const RelationshipFileSchema = z.looseObject({
   twoWay: z.array(IdSchema).default([]),
   aToB: z.array(IdSchema).default([]),
   bToA: z.array(IdSchema).default([]),
-  notes: z.object({ a: z.string(), b: z.string() }).default({ a: "", b: "" }),
+  notes: z.looseObject({ a: z.string(), b: z.string() }).default({ a: "", b: "" }),
 });
 export type RelationshipFile = z.infer<typeof RelationshipFileSchema>;

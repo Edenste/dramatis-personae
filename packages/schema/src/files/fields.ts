@@ -25,7 +25,7 @@ export const FieldDefinitionSchema = z
     default: z.boolean(),
     options: z.array(z.string()).optional(),
     calendar: z
-      .object({ show: z.boolean(), color: ColourSchema.nullable(), title: z.string() })
+      .looseObject({ show: z.boolean(), color: ColourSchema.nullable(), title: z.string() })
       .optional(),
   })
   .superRefine((field, ctx) => {

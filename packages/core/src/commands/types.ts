@@ -10,7 +10,14 @@ export interface CommandError {
 
 /** One file a command writes or removes. */
 export type Write =
-  | { ref: FileRef; fileName: string; data: Record<string, unknown> }
+  | {
+      ref: FileRef;
+      fileName: string;
+      /** What the model holds. */
+      data: Record<string, unknown>;
+      /** What the file is written from, when it differs from `data` (restore). */
+      raw?: unknown;
+    }
   | { ref: FileRef; remove: true };
 
 export type HandlerResult = { ok: true; writes: Write[] } | { ok: false; error: CommandError };

@@ -56,6 +56,18 @@ describe("JsonFileStorage.watch", () => {
     });
   });
 
+  it("reports an outside revert to what the app last wrote", async () => {
+    const original = await readFile(join(characters(), kayFile), "utf8");
+    await storage.write(camelot.worldId, [
+      { op: "put", ref: { kind: "character", id: kayId }, fileName: kayFile, text: original },
+    ]);
+    await editKay((d) => void (d.name = "Sir Kay"));
+    await vi.waitFor(() => expect(changes).toHaveLength(1), WAIT);
+    await writeFile(join(characters(), kayFile), original);
+    await vi.waitFor(() => expect(changes).toHaveLength(2), WAIT);
+    expect(changes[1]).toMatchObject({ type: "upsert", file: { data: { name: "Kay" } } });
+  });
+
   it("ignores the app's own writes", async () => {
     await storage.write(camelot.worldId, [
       {

@@ -5,7 +5,7 @@ export const ViewFileSchema = z.looseObject({
   ...fileBase,
   id: IdSchema,
   name: z.string().min(1),
-  camera: z.object({ x: z.number(), y: z.number(), zoom: z.number().positive() }),
+  camera: z.looseObject({ x: z.number(), y: z.number(), zoom: z.number().positive() }),
   focus: IdSchema.nullable(),
   depth: z.number().int().min(0).nullable(),
   /** Shape defined by the graph views spec. */

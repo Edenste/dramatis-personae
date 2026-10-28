@@ -109,7 +109,8 @@
                   "show",
                   "color",
                   "title"
-                ]
+                ],
+                "additionalProperties": {}
               }
             },
             "required": [
@@ -241,7 +242,8 @@
                 "required": [
                   "style",
                   "weight"
-                ]
+                ],
+                "additionalProperties": {}
               }
             },
             "required": [
@@ -427,7 +429,8 @@
           "properties": {
             "file": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "pattern": "^[^/\\\\]+$"
             },
             "crop": {
               "type": "object",
@@ -452,7 +455,8 @@
                 "x",
                 "y",
                 "size"
-              ]
+              ],
+              "additionalProperties": {}
             }
           },
           "required": [
@@ -531,7 +535,8 @@
           "required": [
             "a",
             "b"
-          ]
+          ],
+          "additionalProperties": {}
         }
       },
       "required": [
@@ -655,7 +660,8 @@
             "x",
             "y",
             "zoom"
-          ]
+          ],
+          "additionalProperties": {}
         },
         "focus": {
           "anyOf": [

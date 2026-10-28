@@ -40,7 +40,7 @@ function handle(ctx: HandlerContext, command: Command): HandlerResult {
     case "character.delete":
       return deleteCharacter(ctx, command.id);
     case "restore":
-      return restoreFiles(command.files);
+      return restoreFiles(ctx, command.files);
   }
 }
 
@@ -99,7 +99,7 @@ export function applyBatch(
         updates.push({ ref: write.ref, removed: true });
         final.set(key, null);
       } else {
-        const text = serialize(write.data);
+        const text = serialize(write.raw ?? write.data);
         const print = fingerprint(text);
         changes.push({ op: "put", ref: write.ref, fileName: write.fileName, text });
         updates.push({

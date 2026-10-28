@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { ColourSchema, IdSchema, fileBase } from "./common.ts";
+import { ColourSchema, FileNameSchema, IdSchema, fileBase } from "./common.ts";
 
 const fraction = z.number().min(0).max(1);
 
 export const PortraitSchema = z.looseObject({
   /** File name inside assets/portraits/. */
-  file: z.string().min(1),
+  file: FileNameSchema,
   /** Crop square, as fractions of the original image's size. */
-  crop: z.object({ x: fraction, y: fraction, size: fraction }),
+  crop: z.looseObject({ x: fraction, y: fraction, size: fraction }),
 });
 
 export const CharacterFileSchema = z.looseObject({

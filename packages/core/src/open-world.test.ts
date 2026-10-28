@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { MigrationError, type Migration } from "./migrations/migrations.ts";
 import { openWorld } from "./open-world.ts";
 import { JsonFileStorage } from "./storage/json-files/json-file-storage.ts";
+import { ScriptedFs } from "./test-utils/scripted-fs.ts";
 import { copyCamelot, type TempCamelot } from "./test-utils/temp-world.ts";
 
 type Json = Record<string, unknown>;
@@ -112,6 +113,25 @@ describe("openWorld", () => {
     ).rejects.toBeInstanceOf(MigrationError);
     expect(await snapshotDisk(camelot.worldPath)).toEqual(before);
     expect(await readdir(backups())).toHaveLength(1);
+  });
+
+  it("leaves the world at its old version if writing a migrated document fails", async () => {
+    await setVersion(0, (d) => {
+      d.tags = d.roles;
+      delete d.roles;
+    });
+    const fs = new ScriptedFs();
+    fs.failRenameTo = /\/characters\/[^/]+\.json$/;
+    const failing = new JsonFileStorage({
+      dataRoot: camelot.dataRoot,
+      fs,
+      sleep: () => Promise.resolve(),
+    });
+    await expect(
+      openWorld(failing, camelot.worldId, { migrations: [tagsToRoles], currentVersion: 1 }),
+    ).rejects.toMatchObject({ code: "locked" });
+    const world = JSON.parse(await readFile(join(camelot.worldPath, "world.json"), "utf8")) as Json;
+    expect(world.schemaVersion).toBe(0);
   });
 
   it("opens a world from a newer version read-only and writes nothing", async () => {

@@ -1,4 +1,4 @@
-export type StorageErrorCode = "locked" | "not-loaded" | "not-found" | "io";
+export type StorageErrorCode = "locked" | "not-loaded" | "not-found" | "ambiguous" | "io";
 
 export class StorageError extends Error {
   override readonly name = "StorageError";

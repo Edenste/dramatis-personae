@@ -97,15 +97,14 @@ export async function openWorld(
   options: OpenWorldOptions = {},
 ): Promise<{ model: WorldModel; readOnly: boolean }> {
   const target = options.currentVersion ?? CURRENT_SCHEMA_VERSION;
-  const raw = await storage.loadRaw(worldId);
-  const worldText = raw.find((f) => f.path === WORLD_FILE)?.text ?? "{}";
-  const version = (JSON.parse(stripBom(worldText)) as { schemaVersion?: number }).schemaVersion;
+  const version = (await storage.listWorlds()).find((w) => w.id === worldId)?.schemaVersion;
 
   if (typeof version === "number" && version > target) {
     return { model: WorldModel.fromLoaded(await storage.loadWorld(worldId)), readOnly: true };
   }
 
   if (typeof version === "number" && version < target) {
+    const raw = await storage.loadRaw(worldId);
     await storage.backup(worldId);
     const migrated = migrate(
       parseRaw(raw, version, target),
@@ -116,9 +115,13 @@ export async function openWorld(
     validate(migrated, version, target);
     const fields = migrated.find((f) => f.path === LIBRARY_FILES.fields)?.data;
     const schema = buildWorldJsonSchema(FieldsFileSchema.safeParse(fields).data?.fields ?? []);
+    const text = (file: MigratableFile) => ({ path: file.path, text: serialize(file.data) });
+    // world.json goes last: if any other write fails, the world still says it's
+    // at the old version and is migrated again next time.
     await storage.writeRaw(worldId, [
-      ...migrated.map((file) => ({ path: file.path, text: serialize(file.data) })),
+      ...migrated.filter((f) => f.path !== WORLD_FILE).map(text),
       { path: "world.schema.json", text: serialize(schema) },
+      ...migrated.filter((f) => f.path === WORLD_FILE).map(text),
     ]);
   }
 

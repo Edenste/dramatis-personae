@@ -14,6 +14,8 @@ export class ScriptedFs implements FileSystem {
   renameFailures: string[] = [];
   /** If set, every rename throws this error code. */
   alwaysFailRename: string | null = null;
+  /** If set, renames onto a matching path always throw EBUSY. */
+  failRenameTo: RegExp | null = null;
 
   readFile = (path: string) => nodeFileSystem.readFile(path);
   readdir = (path: string) => nodeFileSystem.readdir(path);
@@ -28,7 +30,8 @@ export class ScriptedFs implements FileSystem {
   };
 
   rename = async (from: string, to: string) => {
-    const failure = this.alwaysFailRename ?? this.renameFailures.shift();
+    const blocked = this.failRenameTo?.test(to.replaceAll("\\", "/")) ? "EBUSY" : undefined;
+    const failure = blocked ?? this.alwaysFailRename ?? this.renameFailures.shift();
     if (failure) throw fsError(failure);
     this.ops.push(`rename ${from} -> ${to}`);
     await nodeFileSystem.rename(from, to);

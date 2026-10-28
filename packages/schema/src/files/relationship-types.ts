@@ -6,7 +6,7 @@ export const RelationshipTypeSchema = z.looseObject({
   name: z.string().min(1),
   direction: z.enum(["two-way", "one-way"]),
   color: ColourSchema,
-  line: z.object({
+  line: z.looseObject({
     style: z.enum(["solid", "dashed", "dotted"]),
     weight: z.enum(["thin", "normal", "thick"]),
   }),

@@ -121,6 +121,52 @@ describe("JsonFileStorage loading", () => {
     expect(existsSync(join(characters(), "notes.txt"))).toBe(true);
   });
 
+  it("reports a file that isn't UTF-8 instead of loading garbled text", async () => {
+    const latin1 = Uint8Array.from(
+      [...'{"id":"ectorectorectorr","name":"Caf']
+        .map((c) => c.charCodeAt(0))
+        .concat([0xe9, 0x22, 0x7d]),
+    );
+    await writeFile(join(characters(), "latin1.json"), latin1);
+    const world = await storage.loadWorld(camelot.worldId);
+    expect(world.problems).toEqual([
+      expect.objectContaining({ code: "invalid-json", path: "characters/latin1.json" }),
+    ]);
+    expect(world.problems[0]?.message).toContain("UTF-8");
+  });
+
+  it("loads a UTF-16 file with a byte-order mark", async () => {
+    const text = JSON.stringify({ id: "ectorectorectorr", name: "Café" });
+    const bytes = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(text, "utf16le")]);
+    await writeFile(join(characters(), "utf16.json"), bytes);
+    const world = await storage.loadWorld(camelot.worldId);
+    expect(world.problems).toEqual([]);
+    expect(world.files.find((f) => f.path === "characters/utf16.json")?.data).toMatchObject({
+      name: "Café",
+    });
+  });
+
+  it("lists a world whose world.json is broken, with the problem", async () => {
+    await writeFile(join(camelot.worldPath, "world.json"), "{ broken");
+    const worlds = await storage.listWorlds();
+    expect(worlds).toEqual([
+      expect.objectContaining({
+        id: camelot.worldId,
+        problem: expect.stringContaining("world.json"),
+      }),
+    ]);
+    await expect(storage.loadWorld(camelot.worldId)).rejects.toMatchObject({ code: "io" });
+  });
+
+  it("flags two world folders with the same id and refuses to guess between them", async () => {
+    const { cp } = await import("node:fs/promises");
+    await cp(camelot.worldPath, `${camelot.worldPath}-copy`, { recursive: true });
+    const worlds = await storage.listWorlds();
+    expect(worlds).toHaveLength(2);
+    for (const world of worlds) expect(world.problem).toContain("same id");
+    await expect(storage.loadWorld(camelot.worldId)).rejects.toMatchObject({ code: "ambiguous" });
+  });
+
   it("refuses to write to a world that hasn't been loaded", async () => {
     await expect(storage.write(camelot.worldId, [])).rejects.toMatchObject({
       name: "StorageError",

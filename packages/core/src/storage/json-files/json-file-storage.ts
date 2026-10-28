@@ -1,4 +1,4 @@
-import { join, relative, sep } from "node:path";
+import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { zipSync } from "fflate";
 import {
   DOCUMENT_FOLDERS,
@@ -6,7 +6,6 @@ import {
   LIBRARY_KINDS,
   PORTRAITS_FOLDER,
   WORLD_FILE,
-  WorldFileSchema,
   buildWorldJsonSchema,
   documentFileName,
   generateId as defaultGenerateId,
@@ -17,6 +16,7 @@ import {
   type DocumentKind,
   type FileRef,
   type Problem,
+  type WorldFile,
 } from "@dramatis-personae/schema";
 import { newWorldFiles } from "../../defaults.ts";
 import { fingerprint, serialize } from "../../serialize.ts";
@@ -41,9 +41,9 @@ import {
   kindForPath,
   pathForRef,
 } from "./paths.ts";
-import { parseFile } from "./read.ts";
+import { decodeText, parseFile } from "./read.ts";
 import { watchFolder } from "./watch.ts";
-import { PathQueue, removeFile, writeAtomic } from "./write.ts";
+import { PathQueue, removeFile, withLockRetry, writeAtomic } from "./write.ts";
 
 export interface JsonFileStorageOptions {
   /** The data root holding Data/, Backups/ and so on. */
@@ -86,16 +86,33 @@ export class JsonFileStorage implements WorldStorage {
     return join(this.dataRoot, ...WORLDS_DIR);
   }
 
+  /**
+   * Every folder with a world.json. A broken world.json, or two folders with the
+   * same id (a copied folder), is listed with a `problem` rather than hidden.
+   */
   async listWorlds(): Promise<WorldSummary[]> {
     const worlds: WorldSummary[] = [];
-    for (const folder of await this.list(this.worldsDir)) {
+    for (const folder of (await this.list(this.worldsDir)).sort()) {
       const bytes = await this.read(join(this.worldsDir, folder, WORLD_FILE));
       if (!bytes) continue;
-      try {
-        const world = WorldFileSchema.parse(JSON.parse(new TextDecoder().decode(bytes)));
+      const parsed = parseFile(WORLD_FILE, "world", bytes);
+      if (parsed.ok) {
+        const world = parsed.data as WorldFile;
         worlds.push({ id: world.id, name: world.name, folder, schemaVersion: world.schemaVersion });
-      } catch {
-        // A folder without a valid world.json isn't a world.
+      } else {
+        worlds.push({
+          id: /-([a-z0-9]{16})$/.exec(folder)?.[1] ?? folder,
+          name: folder,
+          folder,
+          schemaVersion: null,
+          problem: `world.json is invalid: ${parsed.problem.message}`,
+        });
+      }
+    }
+    for (const world of worlds) {
+      const others = worlds.filter((w) => w.id === world.id && w !== world).map((w) => w.folder);
+      if (others.length > 0 && world.schemaVersion !== null) {
+        world.problem = `Another world folder has the same id: ${others.join(", ")}`;
       }
     }
     return worlds;
@@ -178,18 +195,33 @@ export class JsonFileStorage implements WorldStorage {
     return { worldId, folder, schemaVersion, files, assets, problems };
   }
 
-  async write(worldId: string, changes: DocumentChange[]): Promise<WriteResult> {
+  write(worldId: string, changes: DocumentChange[]): Promise<WriteResult> {
     const state = this.loaded.get(worldId);
-    if (!state) throw new StorageError("not-loaded", worldId, `World ${worldId} isn't loaded`);
-    const fingerprints: Record<string, string | null> = {};
+    if (!state) {
+      return Promise.reject(
+        new StorageError("not-loaded", worldId, `World ${worldId} isn't loaded`),
+      );
+    }
+    // One batch at a time per world, so the path bookkeeping can't race.
+    return this.queue.run(`world:${worldId}`, () => this.applyChanges(state, changes));
+  }
 
+  protected async applyChanges(state: WorldState, changes: DocumentChange[]): Promise<WriteResult> {
+    const fingerprints: Record<string, string | null> = {};
     for (const change of changes) {
       if (change.op === "put") {
         const key = refKey(change.ref);
-        const path = pathForRef(change.ref, change.fileName);
+        const path = pathForRef(change.ref, bareFileName(change.fileName));
         const previous = state.paths.get(key);
-        await this.putText(state.root, path, change.text);
-        if (previous !== undefined && previous !== path) await this.remove(state.root, previous);
+        if (previous !== undefined && previous !== path && sameFileName(previous, path)) {
+          // Only the spelling changed ("Kay" to "kay", NFD to NFC). On Windows and macOS
+          // both spellings are one file, so writing then removing the old would delete it.
+          await this.renameFile(state.root, previous, path);
+          await this.putText(state.root, path, change.text);
+        } else {
+          await this.putText(state.root, path, change.text);
+          if (previous !== undefined && previous !== path) await this.remove(state.root, previous);
+        }
         state.paths.set(key, path);
         fingerprints[key] = fingerprint(change.text);
       } else if (change.op === "delete") {
@@ -199,20 +231,29 @@ export class JsonFileStorage implements WorldStorage {
         state.paths.delete(key);
         fingerprints[key] = null;
       } else if (change.op === "putAsset") {
-        const path = assetPath(change.fileName);
-        await this.queue.run(join(state.root, path), () =>
-          writeAtomic(this.fs, join(state.root, path), change.bytes, this.sleep),
+        const absolute = inside(state.root, assetPath(bareFileName(change.fileName)));
+        await this.queue.run(absolute, () =>
+          writeAtomic(this.fs, absolute, change.bytes, this.sleep),
         );
       } else {
-        await this.remove(state.root, assetPath(change.fileName));
+        await this.remove(state.root, assetPath(bareFileName(change.fileName)));
       }
     }
     return { fingerprints };
   }
 
+  protected renameFile(root: string, from: string, to: string): Promise<void> {
+    const source = inside(root, from);
+    const target = inside(root, to);
+    return this.queue.run(target, async () => {
+      this.ownDeletes.add(source);
+      await withLockRetry(target, this.sleep, () => this.fs.rename(source, target));
+    });
+  }
+
   /** Atomically writes a world file and remembers it as the app's own write. */
   protected putText(root: string, path: string, text: string): Promise<void> {
-    const absolute = join(root, path);
+    const absolute = inside(root, path);
     return this.queue.run(absolute, async () => {
       this.ownWrites.set(absolute, fingerprint(text));
       await writeAtomic(this.fs, absolute, text, this.sleep);
@@ -220,7 +261,7 @@ export class JsonFileStorage implements WorldStorage {
   }
 
   protected remove(root: string, path: string): Promise<void> {
-    const absolute = join(root, path);
+    const absolute = inside(root, path);
     return this.queue.run(absolute, async () => {
       this.ownDeletes.add(absolute);
       this.ownWrites.delete(absolute);
@@ -259,6 +300,7 @@ export class JsonFileStorage implements WorldStorage {
     if (!bytes) {
       if (this.ownDeletes.delete(absolute)) return null;
       const key = [...state.paths].find(([, p]) => p === path)?.[0];
+      this.ownWrites.delete(absolute);
       if (key === undefined) return null;
       state.paths.delete(key);
       return { type: "remove", path, ref: parseRefKey(key) };
@@ -269,7 +311,10 @@ export class JsonFileStorage implements WorldStorage {
     const result = isDocumentKind(kind)
       ? await this.readDocument(state.root, path, kind, bytes)
       : await this.readFile(state.root, path, { kind });
-    if (!result.ok) return { type: "invalid", path, problem: result.problem };
+    if (!result.ok) {
+      this.ownWrites.delete(absolute);
+      return { type: "invalid", path, problem: result.problem };
+    }
 
     const key = refKey(result.file.ref);
     const known = state.paths.get(key);
@@ -287,6 +332,9 @@ export class JsonFileStorage implements WorldStorage {
       };
     }
     state.paths.set(key, path);
+    // The model now holds this content, so a later revert to the app's own last
+    // write is a real change and must be reported.
+    this.ownWrites.set(absolute, result.file.fingerprint);
     return { type: "upsert", file: result.file };
   }
 
@@ -299,7 +347,10 @@ export class JsonFileStorage implements WorldStorage {
         const path = sub ? `${sub}/${name}` : name;
         if (!kindForPath(path)) continue;
         const bytes = await this.read(join(root, path));
-        if (bytes) files.push({ path, text: new TextDecoder("utf-8").decode(bytes) });
+        if (!bytes) continue;
+        const decoded = decodeText(bytes);
+        if (!decoded.ok) throw new StorageError("io", path, `${path}: ${decoded.message}`);
+        files.push({ path, text: decoded.text });
       }
     }
     return files;
@@ -341,8 +392,18 @@ export class JsonFileStorage implements WorldStorage {
   }
 
   protected async folderFor(worldId: string): Promise<string> {
-    const world = (await this.listWorlds()).find((w) => w.id === worldId);
+    const matches = (await this.listWorlds()).filter((w) => w.id === worldId);
+    const world = matches[0];
     if (!world) throw new StorageError("not-found", worldId, `No world with id ${worldId}`);
+    if (matches.length > 1) {
+      const folders = matches.map((w) => w.folder).join(", ");
+      throw new StorageError(
+        "ambiguous",
+        worldId,
+        `Several world folders have id ${worldId}: ${folders}`,
+      );
+    }
+    if (world.schemaVersion === null) throw new StorageError("io", WORLD_FILE, world.problem ?? "");
     return world.folder;
   }
 
@@ -424,4 +485,27 @@ function timestamp(date: Date): string {
     `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-` +
     `${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
   );
+}
+
+/** Rejects a file name that contains folders, so it can't leave its own folder. */
+function bareFileName(name: string): string {
+  if (name === "" || name === "." || name === ".." || /[/\\]/.test(name)) {
+    throw new StorageError("io", name, `${name} isn't a plain file name`);
+  }
+  return name;
+}
+
+/** The absolute path of a world-relative path, refusing anything outside the world. */
+function inside(root: string, path: string): string {
+  const absolute = resolve(root, path);
+  const rel = relative(root, absolute);
+  if (rel === "" || rel.startsWith("..") || isAbsolute(rel)) {
+    throw new StorageError("io", path, `${path} is outside the world folder`);
+  }
+  return absolute;
+}
+
+/** True when two paths differ only in case or Unicode composition. */
+function sameFileName(a: string, b: string): boolean {
+  return a.normalize("NFC").toLowerCase() === b.normalize("NFC").toLowerCase();
 }
