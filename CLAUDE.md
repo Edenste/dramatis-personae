@@ -76,6 +76,8 @@ Intended major pieces (subject to change):
 ```
 CLAUDE.md          development guidance (this file)
 decisions/         architecture decision records (ADRs) and their index
+apps/
+  server/          Fastify server: data root and Config/, security, routes, WebSocket, world sessions
 packages/
   schema/          Zod schemas for files and API messages, IDs and file names
   core/            storage, world model, search, commands, migrations

@@ -1,6 +1,7 @@
 import type { AddressInfo } from "node:net";
 import fastifyCookie from "@fastify/cookie";
 import fastifySwagger from "@fastify/swagger";
+import fastifyWebsocket from "@fastify/websocket";
 import Fastify, { type FastifyBaseLogger } from "fastify";
 import {
   jsonSchemaTransform,
@@ -9,7 +10,12 @@ import {
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
 import type { Logger } from "pino";
-import type { OpenWorldOptions, User, WorldStorage } from "@dramatis-personae/core";
+import {
+  JsonFileStorage,
+  type OpenWorldOptions,
+  type User,
+  type WorldStorage,
+} from "@dramatis-personae/core";
 import type { OptionsFile } from "@dramatis-personae/schema";
 import type { DataPaths } from "./config/data-root.ts";
 import { checkWritable } from "./config/options.ts";
@@ -20,6 +26,10 @@ import { registerSecurity } from "./http/security.ts";
 import { settingsRoutes } from "./routes/settings.ts";
 import { statusRoutes } from "./routes/status.ts";
 import { webRoutes } from "./routes/web.ts";
+import { workspaceRoutes } from "./routes/workspace.ts";
+import { worldRoutes } from "./routes/worlds.ts";
+import { wsRoutes } from "./routes/ws.ts";
+import { WorldSessions } from "./worlds/world-sessions.ts";
 
 export interface ServerOptions {
   paths: DataPaths;
@@ -73,6 +83,7 @@ export async function buildServer(opts: ServerOptions): Promise<App> {
     transform: jsonSchemaTransform,
   });
   await app.register(fastifyCookie);
+  await app.register(fastifyWebsocket);
 
   let hosts = opts.allowedHosts;
   registerSecurity(app, {
@@ -98,8 +109,15 @@ export async function buildServer(opts: ServerOptions): Promise<App> {
     );
   });
 
+  const storage = opts.storage ?? new JsonFileStorage({ dataRoot: opts.paths.dataRoot });
+  const sessions = new WorldSessions(storage, opts.openWorld);
+  app.addHook("onClose", () => sessions.closeAll());
+
   statusRoutes(app, ctx);
   settingsRoutes(app, ctx);
+  worldRoutes(app, ctx, sessions);
+  workspaceRoutes(app, ctx, sessions);
+  wsRoutes(app, ctx, sessions);
   app.get("/api/openapi.json", { schema: { hide: true } }, () => app.swagger());
   await webRoutes(app, opts.webRoot);
 

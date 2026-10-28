@@ -5,3 +5,4 @@ export {
   type TempCamelot,
   type TempDataRoot,
 } from "./test-utils/temp-world.ts";
+export { ScriptedFs } from "./test-utils/scripted-fs.ts";
