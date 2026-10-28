@@ -29,6 +29,7 @@ import type {
   RawFile,
   StoredFile,
   WorldStorage,
+  WatchEvents,
   WorldSummary,
   WriteResult,
 } from "../types.ts";
@@ -272,7 +273,7 @@ export class JsonFileStorage implements WorldStorage {
   watch(
     worldId: string,
     onChange: (change: ExternalChange) => void,
-    onReady?: () => void,
+    events?: WatchEvents,
   ): () => void {
     const state = this.loaded.get(worldId);
     if (!state) throw new StorageError("not-loaded", worldId, `World ${worldId} isn't loaded`);
@@ -281,13 +282,14 @@ export class JsonFileStorage implements WorldStorage {
       state.root,
       (absolute) => {
         void this.queue
-          .run(absolute, () => this.externalChange(state, absolute))
+          // The world's current state: a reload (loadWorld) replaces it while watching.
+          .run(absolute, () => this.externalChange(this.loaded.get(worldId) ?? state, absolute))
           .then((change) => {
             if (change && !stopped) onChange(change);
           })
           .catch(() => undefined);
       },
-      onReady,
+      events,
     );
     return () => {
       stopped = true;

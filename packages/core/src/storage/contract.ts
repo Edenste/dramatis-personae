@@ -90,7 +90,7 @@ export function defineStorageContract(name: string, make: () => Promise<Contract
       await subject.storage.loadWorld(worldId);
       let stop = () => {};
       await new Promise<void>((resolve) => {
-        stop = subject.storage.watch(worldId, () => undefined, resolve);
+        stop = subject.storage.watch(worldId, () => undefined, { onReady: resolve });
       });
       stop();
     });

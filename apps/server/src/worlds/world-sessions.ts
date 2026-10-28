@@ -1,12 +1,7 @@
-import {
-  MigrationError,
-  StorageError,
-  type OpenWorldOptions,
-  type WorldStorage,
-} from "@dramatis-personae/core";
+import { MigrationError, StorageError, type WorldStorage } from "@dramatis-personae/core";
 import type { WorldSummary } from "@dramatis-personae/schema";
 import { ApiError } from "../http/errors.ts";
-import { WorldSession } from "./world-session.ts";
+import { WorldSession, type SessionOptions } from "./world-session.ts";
 
 /** The open worlds. Each is opened once, on first use, and shared. */
 export class WorldSessions {
@@ -14,7 +9,7 @@ export class WorldSessions {
 
   constructor(
     private readonly storage: WorldStorage,
-    private readonly options?: OpenWorldOptions,
+    private readonly options?: SessionOptions,
   ) {}
 
   list(): Promise<WorldSummary[]> {

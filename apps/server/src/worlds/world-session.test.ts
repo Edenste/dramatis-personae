@@ -1,7 +1,12 @@
-import { cp, readFile, readdir, writeFile } from "node:fs/promises";
+import { cp, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { JsonFileStorage, type FileSystem, type Migration } from "@dramatis-personae/core";
+import {
+  JsonFileStorage,
+  type ExternalChange,
+  type FileSystem,
+  type Migration,
+} from "@dramatis-personae/core";
 import { ScriptedFs, copyCamelot, type TempCamelot } from "@dramatis-personae/core/testing";
 import { CAMELOT_IDS } from "@dramatis-personae/samples";
 import { refKey, type FileRef, type ServerMessage } from "@dramatis-personae/schema";
@@ -212,6 +217,23 @@ describe("WorldSession", () => {
       expect(messages).toContainEqual(expect.objectContaining({ type: "reload" }));
     });
 
+    it("keeps seeing outside changes after a discard", async () => {
+      await expect(renameKay("Cai")).rejects.toMatchObject({ code: "save-failed" });
+      fs.alwaysFailRename = null;
+      await session.discardUnsaved();
+      const { fingerprints } = await session.apply(
+        { commands: [{ type: "character.create", character: { name: "Squire Tom" } }] },
+        owner,
+      );
+      const tomKey = Object.keys(fingerprints)[0]!;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      await unlink(await fileOf("squire-tom-"));
+      await vi.waitFor(() => expect(session.model.all("character")).toHaveLength(12), WAIT);
+      expect(messages).toContainEqual(
+        expect.objectContaining({ type: "changed", removed: [tomKey] }),
+      );
+    });
+
     it("still takes in outside edits to other files", async () => {
       await expect(renameKay("Cai")).rejects.toMatchObject({ code: "save-failed" });
       const path = await fileOf("gawain-");
@@ -227,6 +249,86 @@ describe("WorldSession", () => {
     it("has nothing to retry once saved", async () => {
       fs.alwaysFailRename = null;
       await expect(session.retry()).rejects.toMatchObject({ status: 409, code: "conflict" });
+    });
+  });
+
+  describe("an outside edit arriving while the app writes the same file", () => {
+    /** Storage whose writes wait for a gate, and which hands the test its watch callback. */
+    class GatedStorage extends JsonFileStorage {
+      gate: Promise<void> | null = null;
+      onChange: ((change: ExternalChange) => void) | undefined;
+      override async write(...args: Parameters<JsonFileStorage["write"]>) {
+        if (this.gate) await this.gate;
+        return super.write(...args);
+      }
+      override watch(...args: Parameters<JsonFileStorage["watch"]>) {
+        this.onChange = args[1];
+        return super.watch(...args);
+      }
+    }
+
+    it("ends with memory and disk agreeing on the app's write", async () => {
+      const storage = new GatedStorage({ dataRoot: camelot.dataRoot });
+      sessions = new WorldSessions(storage);
+      session = await sessions.get(camelot.worldId);
+      const stale = session.model.files().find((f) => refKey(f.ref) === refKey(kay))!;
+
+      let release = () => {};
+      storage.gate = new Promise<void>((resolve) => (release = resolve));
+      const writing = renameKay("Cai");
+      await new Promise((resolve) => setTimeout(resolve, 20)); // the batch is now writing
+      // The watcher read Kay's file just before the app's write landed on disk.
+      storage.onChange!({
+        type: "upsert",
+        file: {
+          ...stale,
+          data: { ...(stale.data as Json), name: "Kay of the Outside" },
+          fingerprint: "f".repeat(64),
+        },
+      });
+      release();
+      await writing;
+      await session.apply({ commands: [] }, owner); // runs after everything already queued
+
+      expect(session.model.get("character", kayId)?.name).toBe("Cai");
+      const onDisk = JSON.parse(await readFile(await fileOf("cai-"), "utf8")) as Json;
+      expect(onDisk.name).toBe("Cai");
+    });
+  });
+
+  describe("a watcher that can't watch", () => {
+    class BrokenWatchStorage extends JsonFileStorage {
+      constructor(
+        dataRoot: string,
+        private readonly mode: "error" | "silent",
+      ) {
+        super({ dataRoot });
+      }
+      override watch(...[, , events]: Parameters<JsonFileStorage["watch"]>) {
+        if (this.mode === "error") events?.onError?.(new Error("ENOSPC: watch limit reached"));
+        return () => undefined;
+      }
+    }
+
+    it("still opens the world, with a warning, when the watcher fails", async () => {
+      const warnings: string[] = [];
+      sessions = new WorldSessions(new BrokenWatchStorage(camelot.dataRoot, "error"), {
+        onWarning: (message) => warnings.push(message),
+      });
+      session = await sessions.get(camelot.worldId);
+      expect(session.model.all("character")).toHaveLength(12);
+      expect(warnings.join("\n")).toContain("ENOSPC");
+    });
+
+    it("still opens the world, with a warning, when the watcher never gets ready", async () => {
+      const warnings: string[] = [];
+      sessions = new WorldSessions(new BrokenWatchStorage(camelot.dataRoot, "silent"), {
+        onWarning: (message) => warnings.push(message),
+        readyTimeoutMs: 100,
+      });
+      session = await sessions.get(camelot.worldId);
+      expect(session.model.all("character")).toHaveLength(12);
+      expect(warnings).toHaveLength(1);
     });
   });
 

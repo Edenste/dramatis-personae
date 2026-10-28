@@ -47,6 +47,13 @@ export type ExternalChange =
   | { type: "invalid"; path: string; problem: Problem }
   | { type: "remove"; path: string; ref: FileRef };
 
+export interface WatchEvents {
+  /** Outside changes are being seen from now on; earlier ones can be missed. */
+  onReady?: () => void;
+  /** The watcher failed (for example, the system's watch limit); changes may be missed. */
+  onError?: (error: Error) => void;
+}
+
 export interface RawFile {
   path: string;
   text: string;
@@ -57,11 +64,10 @@ export interface WorldStorage {
   createWorld(init: { name: string }): Promise<string>;
   loadWorld(worldId: string): Promise<LoadedWorld>;
   write(worldId: string, changes: DocumentChange[]): Promise<WriteResult>;
-  /** `onReady` is called once outside changes are being seen; earlier ones can be missed. */
   watch(
     worldId: string,
     onChange: (change: ExternalChange) => void,
-    onReady?: () => void,
+    events?: WatchEvents,
   ): () => void;
   loadRaw(worldId: string): Promise<RawFile[]>;
   writeRaw(worldId: string, files: RawFile[]): Promise<void>;

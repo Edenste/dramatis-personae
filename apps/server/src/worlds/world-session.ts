@@ -27,6 +27,13 @@ import {
 import { ApiError } from "../http/errors.ts";
 import { SerialQueue } from "./serial-queue.ts";
 
+export interface SessionOptions extends OpenWorldOptions {
+  /** Hears about problems that don't stop the world working, for the log. */
+  onWarning?: (message: string) => void;
+  /** How long opening waits for the file watcher. Default 10 seconds. */
+  readyTimeoutMs?: number;
+}
+
 const UNSAVED_MESSAGE =
   "Couldn't save your change. It's kept in the app; retry when the file is free.";
 
@@ -42,6 +49,13 @@ const COMMAND_STATUS: Record<CommandError["code"], number> = {
 /** Library kinds whose changes alter how characters are searched. */
 const SEARCH_LIBRARIES = new Set(["roles", "fields", "templates"]);
 
+/** The files a batch is writing right now, and outside changes to them seen meanwhile. */
+interface Writing {
+  /** Ref key by world-relative path, before and after the batch. */
+  keys: Map<string, string>;
+  raced: Set<string>;
+}
+
 interface Pending {
   changes: DocumentChange[];
   result: CommandResult;
@@ -54,14 +68,15 @@ const refsOf = (changes: DocumentChange[]): FileRef[] =>
  * One open world: its model, search index and file watcher. Commands, retries,
  * fixes and outside changes all go through one queue, so they apply in order.
  *
- * Known limitation: an app write landing inside the watcher's debounce window
- * can overwrite an outside edit made a moment earlier. That is treated like a
- * simultaneous edit, and the app's write wins.
+ * When an outside edit and an app write hit the same file at once, the app's
+ * write wins, on disk and in memory alike. That includes an outside edit made
+ * within the watcher's debounce window just before the app writes.
  */
 export class WorldSession {
   private current: WorldModel;
   private index: SearchIndex;
   private pending: Pending | null = null;
+  private writing: Writing | null = null;
   private readonly queue = new SerialQueue();
   private readonly listeners = new Set<(message: ServerMessage) => void>();
   private stopWatching: () => void = () => undefined;
@@ -79,18 +94,35 @@ export class WorldSession {
   static async open(
     storage: WorldStorage,
     worldId: string,
-    options?: OpenWorldOptions,
+    options: SessionOptions = {},
   ): Promise<WorldSession> {
     const { model, readOnly } = await openWorld(storage, worldId, options);
     const session = new WorldSession(storage, worldId, model, readOnly);
-    // The world counts as open once outside edits are being seen.
-    await new Promise<void>((ready) => {
+    const warn = options.onWarning ?? (() => undefined);
+    // The world counts as open once outside edits are being seen. If watching
+    // fails or stalls, it opens anyway: the app works, outside edits may be missed.
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(() => {
+        warn(`World ${worldId}: still not watching for outside edits; opening anyway`);
+        resolve();
+      }, options.readyTimeoutMs ?? 10_000);
       session.stopWatching = storage.watch(
         worldId,
         (change) => {
+          if (session.racesWrite(change)) return;
           void session.queue.run(() => Promise.resolve(session.onExternal(change)));
         },
-        ready,
+        {
+          onReady: () => {
+            clearTimeout(timer);
+            resolve();
+          },
+          onError: (error) => {
+            clearTimeout(timer);
+            warn(`World ${worldId}: can't watch for outside edits: ${error.message}`);
+            resolve();
+          },
+        },
       );
     });
     return session;
@@ -123,7 +155,7 @@ export class WorldSession {
       const pending = this.pending;
       if (!pending) throw new ApiError(409, "conflict", "Nothing to retry");
       try {
-        await this.storage.write(this.worldId, pending.changes);
+        await this.writeChanges(pending.changes, this.current);
       } catch {
         throw new ApiError(503, "save-failed", UNSAVED_MESSAGE);
       }
@@ -229,7 +261,7 @@ export class WorldSession {
     const before = this.current;
     this.current = result.model;
     try {
-      await this.storage.write(this.worldId, result.changes);
+      await this.writeChanges(result.changes, before);
     } catch {
       // The change stays in memory, unsaved, until it is retried or discarded (spec §13).
       this.pending = { changes: result.changes, result: outcome };
@@ -244,6 +276,51 @@ export class WorldSession {
     }
     this.changed(before, refs);
     return outcome;
+  }
+
+  /**
+   * Writes a batch. An outside change to one of its files seen meanwhile may
+   * have landed on disk before or after the app's write; either way the app's
+   * write wins, so those files are written again once the batch is done.
+   */
+  private async writeChanges(changes: DocumentChange[], before: WorldModel): Promise<void> {
+    const keys = new Map<string, string>();
+    for (const ref of refsOf(changes)) {
+      for (const path of [before.path(ref), this.current.path(ref)]) {
+        if (path !== undefined) keys.set(path, refKey(ref));
+      }
+    }
+    const writing: Writing = { keys, raced: new Set() };
+    this.writing = writing;
+    try {
+      await this.storage.write(this.worldId, changes);
+      if (writing.raced.size > 0) {
+        await this.storage.write(
+          this.worldId,
+          changes.filter(
+            (change) =>
+              (change.op === "put" || change.op === "delete") &&
+              writing.raced.has(refKey(change.ref)),
+          ),
+        );
+      }
+    } finally {
+      this.writing = null;
+    }
+  }
+
+  /** True for an outside change to a file the current batch is writing; it is set aside. */
+  private racesWrite(change: ExternalChange): boolean {
+    if (!this.writing) return false;
+    const path = change.type === "upsert" ? change.file.path : change.path;
+    const ref =
+      change.type === "upsert" ? change.file.ref : change.type === "remove" ? change.ref : null;
+    const written = new Set(this.writing.keys.values());
+    const key =
+      this.writing.keys.get(path) ?? (ref && written.has(refKey(ref)) ? refKey(ref) : null);
+    if (key === null) return false;
+    this.writing.raced.add(key);
+    return true;
   }
 
   private onExternal(change: ExternalChange): void {
