@@ -41,6 +41,7 @@ Requires Node ≥ 22 and pnpm 10. Run from the repository root:
 | `pnpm lint` | ESLint across the repo |
 | `pnpm format` / `pnpm format:check` | Format with Prettier, or check formatting without writing |
 | `pnpm check:boundaries` | Fail if a package depends on an internal package that ADR 0007 doesn't allow |
+| `pnpm --filter @dramatis-personae/server start -- [--data-path <dir>] [--port <n>] [--dev]` | Run the server headless; it prints a launch link carrying a one-time token |
 | `pnpm generate:api` | Regenerate `packages/api-client` from the server's OpenAPI spec; commit the result |
 
 CI (`.github/workflows/ci.yml`) checks the generated API client is current, then runs typecheck, lint, format check, boundary check and tests on Ubuntu and Windows.

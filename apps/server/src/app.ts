@@ -38,6 +38,8 @@ export interface ServerOptions {
   version: string;
   /** "host:port" values to answer to. Default: 127.0.0.1, localhost and the listen address, on the bound port. */
   allowedHosts?: string[];
+  /** The address the server listens on, also accepted as a host. Default: options.listenAddress. */
+  listenAddress?: string;
   /** The built web app. Without it, GET / serves a small placeholder page. */
   webRoot?: string;
   openPath?: (path: string) => Promise<void>;
@@ -90,7 +92,10 @@ export async function buildServer(opts: ServerOptions): Promise<App> {
     token: opts.token,
     allowedHosts: () => {
       if (hosts) return hosts;
-      const bound = boundHosts(app.server.address(), opts.options.listenAddress);
+      const bound = boundHosts(
+        app.server.address(),
+        opts.listenAddress ?? opts.options.listenAddress,
+      );
       if (bound.length > 0) hosts = bound;
       return bound;
     },
