@@ -138,6 +138,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             dataRoot: string;
+                            optionsProblem?: string;
                             problem?: string;
                             version: string;
                             writable: boolean;

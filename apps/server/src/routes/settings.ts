@@ -42,7 +42,12 @@ export function settingsRoutes(app: App, ctx: ServerContext): void {
     if (!ctx.openPath) {
       throw new ApiError(501, "not-supported", "Opening folders isn't available here");
     }
-    await ctx.openPath(ctx.paths.dataRoot);
+    try {
+      await ctx.openPath(ctx.paths.dataRoot);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      throw new ApiError(500, "open-failed", `Couldn't open the data folder: ${reason}`);
+    }
     return reply.code(204).send();
   });
 }

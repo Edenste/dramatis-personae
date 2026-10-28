@@ -66,6 +66,8 @@ export const StatusSchema = z.object({
   dataRoot: z.string(),
   writable: z.boolean(),
   problem: z.string().optional(),
+  /** Why options.json was partly or wholly ignored. */
+  optionsProblem: z.string().optional(),
 });
 export type Status = z.infer<typeof StatusSchema>;
 

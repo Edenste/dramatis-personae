@@ -73,6 +73,31 @@ describe("settings and status", () => {
     expect(opened).toEqual([server.paths.dataRoot]);
   });
 
+  it("reports problems with options.json in the status", async () => {
+    server = await testServer({ optionsProblems: ["options.json is invalid: port is too big"] });
+    const response = await server.app.inject({ method: "GET", url: "/api/status", headers: AUTH });
+    expect(response.json()).toMatchObject({
+      writable: true,
+      optionsProblem: "options.json is invalid: port is too big",
+    });
+  });
+
+  it("reports a folder that couldn't be opened, and keeps running", async () => {
+    server = await testServer({ openPath: () => Promise.reject(new Error("xdg-open not found")) });
+    const response = await server.app.inject({
+      method: "POST",
+      url: "/api/data-folder/open",
+      headers: AUTH,
+    });
+    expect(response.statusCode).toBe(500);
+    expect(response.json()).toMatchObject({
+      code: "open-failed",
+      message: expect.stringContaining("xdg-open not found"),
+    });
+    const status = await server.app.inject({ method: "GET", url: "/api/status", headers: AUTH });
+    expect(status.statusCode).toBe(200);
+  });
+
   it("still answers when the data root can't be written to", async () => {
     const temp = await tempDataRoot();
     const file = join(temp.dataRoot, "a-file");

@@ -49,6 +49,8 @@ export interface ServerOptions {
   storage?: WorldStorage;
   /** Test hook for migrations. */
   openWorld?: OpenWorldOptions;
+  /** Problems found reading options.json, reported by /api/status. */
+  optionsProblems?: string[];
   /** Test hook: the user every authenticated request runs as. Defaults to the local owner. */
   user?: User;
 }
@@ -76,6 +78,7 @@ export async function buildServer(opts: ServerOptions): Promise<App> {
     version: opts.version,
     dataRoot: await checkWritable(opts.paths),
     openPath: opts.openPath,
+    optionsProblems: opts.optionsProblems ?? [],
   };
 
   await app.register(fastifySwagger, {
@@ -116,7 +119,10 @@ export async function buildServer(opts: ServerOptions): Promise<App> {
   });
 
   const storage = opts.storage ?? new JsonFileStorage({ dataRoot: opts.paths.dataRoot });
-  const sessions = new WorldSessions(storage, opts.openWorld);
+  const sessions = new WorldSessions(storage, {
+    ...opts.openWorld,
+    onWarning: (message) => app.log.warn(message),
+  });
   app.addHook("onClose", () => sessions.closeAll());
 
   statusRoutes(app, ctx);

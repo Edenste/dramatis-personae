@@ -161,6 +161,9 @@
                     "dataRoot": {
                       "type": "string"
                     },
+                    "optionsProblem": {
+                      "type": "string"
+                    },
                     "problem": {
                       "type": "string"
                     },

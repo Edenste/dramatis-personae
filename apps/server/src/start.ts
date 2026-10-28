@@ -33,12 +33,26 @@ export interface RunningServer {
   close(): Promise<void>;
 }
 
+/**
+ * Starts `command path` detached. Resolves once it has started; rejects if it
+ * can't (a missing program would otherwise crash the server).
+ */
+export function openWith(command: string, path: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, [path], { detached: true, stdio: "ignore" });
+    child.once("error", (error) => reject(new Error(`Couldn't run ${command}: ${error.message}`)));
+    child.once("spawn", () => {
+      child.unref();
+      resolve();
+    });
+  });
+}
+
 /** Opens a folder in the system's file manager. */
 export function defaultOpenPath(path: string): Promise<void> {
   const command =
     process.platform === "win32" ? "explorer" : process.platform === "darwin" ? "open" : "xdg-open";
-  spawn(command, [path], { detached: true, stdio: "ignore" }).unref();
-  return Promise.resolve();
+  return openWith(command, path);
 }
 
 /** Resolves the data root and options, then starts the server with a fresh token (spec §12). */
@@ -65,6 +79,7 @@ export async function startServer(input: StartInput): Promise<RunningServer> {
     // An unusable data root is reported by /api/status; the server still starts.
   }
   for (const warning of warnings) logger?.warn(warning);
+  const optionsProblems = warnings;
 
   const token = randomBytes(32).toString("base64url");
   const host = input.host ?? args.host ?? options.listenAddress;
@@ -77,6 +92,7 @@ export async function startServer(input: StartInput): Promise<RunningServer> {
     webRoot: input.webRoot,
     openPath: input.openPath,
     logger,
+    optionsProblems,
   });
   await app.listen({ port: input.port ?? args.port ?? options.port, host });
 

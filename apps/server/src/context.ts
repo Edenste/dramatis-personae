@@ -20,5 +20,7 @@ export interface ServerContext {
   options: OptionsFile;
   version: string;
   dataRoot: { writable: true } | { writable: false; problem: string };
+  /** Problems found reading options.json at start-up. */
+  optionsProblems: string[];
   openPath?: (path: string) => Promise<void>;
 }

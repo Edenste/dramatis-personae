@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { OptionsFileSchema } from "@dramatis-personae/schema";
@@ -27,6 +27,29 @@ describe("options.json", () => {
     await mkdir(join(temp.dataRoot, "Config"), { recursive: true });
     await writeFile(file, "{ broken");
     expect(await readOptions(file)).toEqual(OptionsFileSchema.parse({}));
+  });
+
+  it("drops only the bad field, keeping the data path, and says why", async () => {
+    await mkdir(join(temp.dataRoot, "Config"), { recursive: true });
+    await writeFile(file, JSON.stringify({ dataPath: "/w", port: 70000, theme: "dark", extra: 1 }));
+    const problems: string[] = [];
+    const options = await readOptions(file, (message) => problems.push(message));
+    expect(options).toMatchObject({ dataPath: "/w", port: 30300, theme: "dark", extra: 1 });
+    expect(problems.join("\n")).toContain("port");
+  });
+
+  it("backs up a broken file before overwriting it", async () => {
+    await mkdir(join(temp.dataRoot, "Config"), { recursive: true });
+    await writeFile(file, '{ "dataPath": "/w", broken');
+    await writeOptions(file, OptionsFileSchema.parse({ theme: "dark" }));
+    const backups = (await readdir(join(temp.dataRoot, "Config"))).filter((n) =>
+      n.startsWith("options.json.broken-"),
+    );
+    expect(backups).toHaveLength(1);
+    expect(await readFile(join(temp.dataRoot, "Config", backups[0]!), "utf8")).toBe(
+      '{ "dataPath": "/w", broken',
+    );
+    expect(await readOptions(file)).toMatchObject({ theme: "dark" });
   });
 
   it("round-trips, keeping unknown keys", async () => {

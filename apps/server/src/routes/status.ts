@@ -7,5 +7,6 @@ export function statusRoutes(app: App, ctx: ServerContext): void {
     dataRoot: ctx.paths.dataRoot,
     writable: ctx.dataRoot.writable,
     ...(ctx.dataRoot.writable ? {} : { problem: ctx.dataRoot.problem }),
+    ...(ctx.optionsProblems.length > 0 ? { optionsProblem: ctx.optionsProblems.join("\n") } : {}),
   }));
 }
