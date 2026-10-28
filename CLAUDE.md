@@ -1,0 +1,72 @@
+# CLAUDE.md
+
+Guidance for working in this repository.
+
+## Project
+
+**Dramatis Personae** is a character hub and relationship-mapping app for writers, worldbuilders and fans. Users build rich profiles for characters (World Anvil / anime-wiki style infoboxes with fillable fields) and explore how everyone connects through an interactive mind-map, in the spirit of Obsidian's graph view and the relationship charts common in anime fandoms.
+
+## Status
+
+Pre-code, planning stage. Decisions and their reasoning are recorded as ADRs in [decisions/](decisions/README.md). Decided so far:
+
+- **Runtime:** a local Node server owns the data directory and serves a web client; the first release ships in an Electron shell, and the server can also run headless ([0002](decisions/0002-local-server-architecture.md)).
+- **Graph:** a framework-independent canvas module using PixiJS v8, with d3-force running in a Web Worker ([0003](decisions/0003-graph-rendering.md)).
+- **UI:** Svelte 5 + Vite + TypeScript, client-only (no SvelteKit) ([0004](decisions/0004-ui-framework.md)).
+- **Storage:** one JSON file per document in a FoundryVTT-style data directory outside the install; external edits are watched and validated; search uses an in-memory index derived from the files; custom fields come from a per-world field library with a `default` flag ([0005](decisions/0005-storage.md)).
+
+- **Server:** Fastify over one HTTP + WebSocket transport everywhere (the Electron window loads the local server); Zod route schemas; OpenAPI spec generated with `@fastify/swagger` and a typed client generated from it ([0006](decisions/0006-server-framework.md)).
+
+- **Repository:** pnpm workspaces monorepo (`apps/desktop`, `apps/server`, `apps/web`, `packages/core`, `packages/schema`, `packages/graph`, `packages/api-client`, `samples/`) with enforced dependency boundaries; the app never writes to its install directory and user data lives in its own data root outside the repo ([0007](decisions/0007-repository-structure.md)).
+
+- **Packaging:** Electron Forge — Squirrel.Windows one-click installer, DMG/ZIP on macOS, GitHub Releases publishing, auto-update via update.electronjs.org; the data root must never be inside the installer-managed folder ([0008](decisions/0008-desktop-packaging.md)).
+
+- **Tooling:** TypeScript strict, Vite, Vitest, Playwright (Electron + browser), ESLint + Prettier (ESLint enforces package boundaries), GitHub Actions ([0009](decisions/0009-tooling.md)).
+
+- **Data model:** random 16-character IDs with cosmetic names in file names (`lancelot-pm6i0t9upq3sgptb.json`); references use bare IDs; one file per pair of characters for relationships; libraries (fields, roles, relationship types, templates) in one ordered file each; documents (characters, relationships, events, views, searches) one file each ([0010](decisions/0010-world-data-model.md)).
+
+- **Edits:** every edit is a command that returns its inverse; all writes go through one command endpoint; undo/redo lives in the client and clears on close; changes, including outside edits to the files, are pushed over WebSocket ([0011](decisions/0011-edits-as-commands.md)).
+
+Do not assume undecided parts of the stack in code or docs. When a decision is made, add an ADR to `decisions/` and update this file, including the **Commands** and **Architecture** sections below.
+
+## Commands
+
+_None yet._ Fill in install, dev, build, test, lint and package commands once the project is scaffolded.
+
+## Architecture
+
+Intended major pieces (subject to change):
+
+- **Character profiles** — structured, template-driven pages with custom fields, an image/portrait, and free-form sections.
+- **Relationship graph** — nodes are characters, edges are typed relationships. Two views:
+  - **Neutral view**: every character and every relationship.
+  - **Focus ("main character") view**: one character at the centre, others arranged by their relationship to them.
+- **Relationship types** — user-defined; each has a label, colour, line style and direction (one-way or two-way).
+- **Local-first storage** — user data lives on the user's machine, in a configurable location, and is never bundled into the repo or the app build.
+- **Desktop shell** — wraps the web app as a native-feeling executable.
+
+## Conventions
+
+- Keep the app generic: it models "characters" and "relationships" with no assumptions about whether they come from fiction, games, tabletop campaigns or elsewhere.
+- Sample, seed, test and demo data must use fictional or public-domain characters (e.g. the Arthurian cast). Never commit real user data.
+- Data model changes need a migration path once a storage format exists.
+- **Commits:**
+  - Follow [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): subject`.
+    - Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `ci`, `build`, `perf`.
+    - Scope is the package (`schema`, `core`, `server`, `web`, `desktop`, `graph`, `samples`), left out for repo-wide changes.
+    - The subject is imperative and lowercase, has no full stop and is at most 72 characters. The optional body explains why.
+    - Mark breaking changes with `!`.
+  - One commit per feature, with its tests. Every commit must pass typecheck, lint and tests.
+- **Branches:** development happens on `dev`. `main` only changes through pull requests from `dev`, merged by rebase. Pushing directly to `main` is blocked.
+- Accessibility matters for the graph: keyboard navigation, readable labels, and colour choices that do not rely on hue alone (relationship types should also differ by line style or label).
+
+## Repository layout
+
+```
+CLAUDE.md          development guidance (this file)
+decisions/         architecture decision records (ADRs) and their index
+.gitignore
+LICENSE            MIT
+```
+
+Add source directories here as they are created.
