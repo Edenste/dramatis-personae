@@ -10,3 +10,4 @@ export {
 export { WorldModel, type FileUpdate } from "./model/world-model.ts";
 export type { DateEntry } from "./model/dates.ts";
 export { SearchIndex } from "./search/search-index.ts";
+export * from "./commands/index.ts";

@@ -175,6 +175,31 @@ export function crossFileProblems(model: WorldModel): Problem[] {
   return problems;
 }
 
+/** Why a value doesn't fit its field, or null if it does. */
+export function fieldValueProblem(
+  field: FieldDefinition,
+  value: unknown,
+  characters: ReadonlySet<string>,
+): string | null {
+  if (!fieldValueSchema(field.type).safeParse(value).success) {
+    return `${field.label} has the wrong kind of value`;
+  }
+  if (field.type === "select" && !field.options?.includes(value as string)) {
+    return `${String(value)} isn't an option for ${field.label}`;
+  }
+  if (field.type === "multiselect") {
+    const missing = (value as string[]).filter((v) => !field.options?.includes(v));
+    if (missing.length > 0) return `${missing.join(", ")} aren't options for ${field.label}`;
+  }
+  if (field.type === "date" && !isPossibleDate(DateValueSchema.parse(value))) {
+    return `${field.label} is a date that doesn't exist`;
+  }
+  if (field.type === "character" && !characters.has(value as string)) {
+    return `${field.label} points to a character that doesn't exist`;
+  }
+  return null;
+}
+
 function checkFieldValues(
   character: CharacterFile,
   fields: Map<string, FieldDefinition>,
@@ -183,23 +208,9 @@ function checkFieldValues(
 ): void {
   for (const [key, value] of Object.entries(character.fields)) {
     const field = fields.get(key);
-    if (!field) {
-      report(`${key} isn't in the field library`);
-      continue;
-    }
-    if (!fieldValueSchema(field.type).safeParse(value).success) {
-      report(`${field.label} has the wrong kind of value`);
-      continue;
-    }
-    if (field.type === "select" && !field.options?.includes(value as string)) {
-      report(`${String(value)} isn't an option for ${field.label}`);
-    } else if (field.type === "multiselect") {
-      const missing = (value as string[]).filter((v) => !field.options?.includes(v));
-      if (missing.length > 0) report(`${missing.join(", ")} aren't options for ${field.label}`);
-    } else if (field.type === "date" && !isPossibleDate(DateValueSchema.parse(value))) {
-      report(`${field.label} is a date that doesn't exist`);
-    } else if (field.type === "character" && !characters.has(value as string)) {
-      report(`${field.label} points to a character that doesn't exist`);
-    }
+    const problem = field
+      ? fieldValueProblem(field, value, characters)
+      : `${key} isn't in the field library`;
+    if (problem) report(problem);
   }
 }

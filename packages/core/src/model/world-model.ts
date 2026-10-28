@@ -88,6 +88,11 @@ export class WorldModel {
     return result;
   }
 
+  /** Any file's data by ref, or undefined if it isn't in the model. */
+  data(ref: FileRef): unknown {
+    return this.entries.get(refKey(ref))?.data;
+  }
+
   /** World-relative path of a file, or undefined if it isn't in the model. */
   path(ref: FileRef): string | undefined {
     return this.entries.get(refKey(ref))?.path;

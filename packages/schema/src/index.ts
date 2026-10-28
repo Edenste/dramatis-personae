@@ -4,3 +4,4 @@ export * from "./problems.ts";
 export * from "./date.ts";
 export * from "./files/index.ts";
 export * from "./json-schema.ts";
+export * from "./commands.ts";
