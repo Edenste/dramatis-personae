@@ -5,3 +5,5 @@ export * from "./date.ts";
 export * from "./files/index.ts";
 export * from "./json-schema.ts";
 export * from "./commands.ts";
+export * from "./config.ts";
+export * from "./api.ts";
