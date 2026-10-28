@@ -1,0 +1,31 @@
+{
+  "name": "@dramatis-personae/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dramatis-personae/core": "workspace:*",
+    "@dramatis-personae/schema": "workspace:*",
+    "@fastify/cookie": "^11.1.5",
+    "@fastify/static": "^10.1.8",
+    "@fastify/swagger": "^9.9.2",
+    "@fastify/websocket": "^11.3.4",
+    "fastify": "^5.12.7",
+    "fastify-type-provider-zod": "^7.0.0",
+    "pino": "^10.4.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@dramatis-personae/samples": "workspace:*",
+    "@types/ws": "^8.18.2",
+    "tsx": "^4.23.15",
+    "vitest": "^5.0.5",
+    "ws": "^8.22.0"
+  }
+}
