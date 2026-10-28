@@ -7,7 +7,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { BrowserWindow, app, dialog, session, shell } from "electron";
 import { startServer, type RunningServer } from "@dramatis-personae/server";
-import { mainWindowOptions } from "./window-options.ts";
+import { mainWindowOptions, revealWindow } from "./window-options.ts";
 import { externalUrlToOpen, isAppUrl } from "./window-security.ts";
 
 let server: RunningServer | undefined;
@@ -16,6 +16,9 @@ let window: BrowserWindow | undefined;
 function createWindow(running: RunningServer): BrowserWindow {
   const win = new BrowserWindow(mainWindowOptions());
   win.once("ready-to-show", () => win.show());
+  win.on("closed", () => {
+    if (window === win) window = undefined;
+  });
 
   const guard = (event: { preventDefault(): void }, url: string) => {
     if (!isAppUrl(url, running.url)) event.preventDefault();
@@ -54,10 +57,13 @@ async function launch(): Promise<void> {
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on("second-instance", () => {
-    if (window?.isMinimized()) window.restore();
-    window?.focus();
-  });
+  // A second launch, or a click on the macOS Dock icon, shows the window,
+  // opening a new one if it was closed (macOS keeps the app running then).
+  const reveal = () => {
+    if (!revealWindow(window) && server) window = createWindow(server);
+  };
+  app.on("second-instance", reveal);
+  app.on("activate", reveal);
 
   app
     .whenReady()

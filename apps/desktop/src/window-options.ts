@@ -16,3 +16,21 @@ export function mainWindowOptions(): BrowserWindowConstructorOptions {
     },
   };
 }
+
+/** The parts of a BrowserWindow that revealWindow uses. */
+export interface RevealableWindow {
+  isDestroyed(): boolean;
+  isMinimized(): boolean;
+  restore(): void;
+  show(): void;
+  focus(): void;
+}
+
+/** Brings the window to the front; false when there is no live window to bring. */
+export function revealWindow(window: RevealableWindow | undefined): boolean {
+  if (!window || window.isDestroyed()) return false;
+  if (window.isMinimized()) window.restore();
+  window.show();
+  window.focus();
+  return true;
+}
