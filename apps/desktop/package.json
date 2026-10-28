@@ -1,0 +1,27 @@
+{
+  "name": "@dramatis-personae/desktop",
+  "productName": "Dramatis Personae",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Character hub and relationship mapping for writers, worldbuilders and fans",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node build.mjs && electron-forge start",
+    "package": "node build.mjs && electron-forge package",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dramatis-personae/server": "workspace:*"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^8.0.1",
+    "@electron-forge/maker-dmg": "^8.0.1",
+    "@electron-forge/maker-squirrel": "^8.0.1",
+    "@electron-forge/maker-zip": "^8.0.1",
+    "electron": "^45.1.0",
+    "esbuild": "^0.28.2",
+    "vitest": "^5.0.5"
+  }
+}

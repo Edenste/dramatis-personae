@@ -8,7 +8,7 @@ Guidance for working in this repository.
 
 ## Status
 
-Pre-code, planning stage. Decisions and their reasoning are recorded as ADRs in [decisions/](decisions/README.md). Decided so far:
+Foundations in progress: the data layer (`schema`, `core`), the local server, the generated API client and the Electron shell exist; the web UI comes next. Decisions and their reasoning are recorded as ADRs in [decisions/](decisions/README.md). Decided so far:
 
 - **Runtime:** a local Node server owns the data directory and serves a web client; the first release ships in an Electron shell, and the server can also run headless ([0002](decisions/0002-local-server-architecture.md)).
 - **Graph:** a framework-independent canvas module using PixiJS v8, with d3-force running in a Web Worker ([0003](decisions/0003-graph-rendering.md)).
@@ -42,6 +42,8 @@ Requires Node ≥ 22 and pnpm 10. Run from the repository root:
 | `pnpm format` / `pnpm format:check` | Format with Prettier, or check formatting without writing |
 | `pnpm check:boundaries` | Fail if a package depends on an internal package that ADR 0007 doesn't allow |
 | `pnpm --filter @dramatis-personae/server start -- [--data-path <dir>] [--port <n>] [--dev]` | Run the server headless; it prints a launch link carrying a one-time token |
+| `pnpm --filter @dramatis-personae/desktop start` | Build and open the desktop app (dev data folder) |
+| `pnpm --filter @dramatis-personae/desktop package` | Package the desktop app into `apps/desktop/out/` |
 | `pnpm generate:api` | Regenerate `packages/api-client` from the server's OpenAPI spec; commit the result |
 
 CI (`.github/workflows/ci.yml`) checks the generated API client is current, then runs typecheck, lint, format check, boundary check and tests on Ubuntu and Windows.
@@ -79,6 +81,7 @@ Intended major pieces (subject to change):
 CLAUDE.md          development guidance (this file)
 decisions/         architecture decision records (ADRs) and their index
 apps/
+  desktop/         Electron main process: starts the server, opens a locked-down window; bundled with esbuild
   server/          Fastify server: data root and Config/, security, routes, WebSocket, world sessions
 packages/
   schema/          Zod schemas for files and API messages, IDs and file names

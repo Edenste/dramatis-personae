@@ -38,7 +38,7 @@ export default tseslint.config(
     rules: { "@typescript-eslint/no-unsafe-assignment": "off" },
   },
   {
-    files: ["**/*.js"],
+    files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
     ...tseslint.configs.disableTypeChecked,
   },
 );
