@@ -2,7 +2,7 @@ import type { AddressInfo } from "node:net";
 import fastifyCookie from "@fastify/cookie";
 import fastifySwagger from "@fastify/swagger";
 import fastifyWebsocket from "@fastify/websocket";
-import Fastify, { type FastifyBaseLogger } from "fastify";
+import Fastify, { LogController, type FastifyBaseLogger } from "fastify";
 import {
   jsonSchemaTransform,
   serializerCompiler,
@@ -64,7 +64,8 @@ function boundHosts(address: AddressInfo | string | null, listenAddress: string)
 export async function buildServer(opts: ServerOptions): Promise<App> {
   const app = Fastify({
     loggerInstance: opts.logger as FastifyBaseLogger | undefined,
-    disableRequestLogging: true,
+    // Requests are logged by the onResponse hook below, without tokens.
+    logController: new LogController({ disableRequestLogging: true }),
   }).withTypeProvider<ZodTypeProvider>();
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
