@@ -101,6 +101,7 @@ describe("resolveDataPaths", () => {
       dataRoot,
       optionsFile: join(defaultRoot, "Config", "options.json"),
       workspacesDir: join(dataRoot, "Config", "workspaces"),
+      appStateFile: join(dataRoot, "Config", "app-state.json"),
       worldsDir: join(dataRoot, "Data", "worlds"),
       logsDir: join(dataRoot, "Logs"),
       source: "flag",

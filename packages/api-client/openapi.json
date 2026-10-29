@@ -8,7 +8,135 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/app-state": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {},
+                  "properties": {
+                    "lastWorld": {
+                      "anyOf": [
+                        {
+                          "pattern": "^[a-z0-9]{16}$",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "required": [
+                    "lastWorld"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      },
+      "put": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": {},
+                "properties": {
+                  "lastWorld": {
+                    "anyOf": [
+                      {
+                        "pattern": "^[a-z0-9]{16}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {},
+                  "properties": {
+                    "lastWorld": {
+                      "anyOf": [
+                        {
+                          "pattern": "^[a-z0-9]{16}$",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "required": [
+                    "lastWorld"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/data-folder/choose": {
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "path": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
     "/api/data-folder/open": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/restart": {
       "post": {
         "responses": {
           "200": {
@@ -161,6 +289,29 @@
                     "dataRoot": {
                       "type": "string"
                     },
+                    "desktop": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "windowControls": {
+                              "enum": [
+                                "left",
+                                "right"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "windowControls"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "optionsProblem": {
                       "type": "string"
                     },
@@ -177,7 +328,8 @@
                   "required": [
                     "version",
                     "dataRoot",
-                    "writable"
+                    "writable",
+                    "desktop"
                   ],
                   "type": "object"
                 }
@@ -521,6 +673,11 @@
                     "readOnly": {
                       "type": "boolean"
                     },
+                    "seq": {
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
                     "unsaved": {
                       "anyOf": [
                         {
@@ -582,7 +739,8 @@
                     "readOnly",
                     "unsaved",
                     "files",
-                    "problems"
+                    "problems",
+                    "seq"
                   ],
                   "type": "object"
                 }
@@ -2900,6 +3058,50 @@
                         "null"
                       ]
                     },
+                    "cards": {
+                      "additionalProperties": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "character": {
+                              "pattern": "^[a-z0-9]{16}$",
+                              "type": "string"
+                            },
+                            "height": {
+                              "exclusiveMinimum": 0,
+                              "type": "number"
+                            },
+                            "width": {
+                              "exclusiveMinimum": 0,
+                              "type": "number"
+                            },
+                            "x": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "y": {
+                              "minimum": 0,
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "character",
+                            "x",
+                            "y",
+                            "width",
+                            "height"
+                          ],
+                          "type": "object"
+                        },
+                        "maxItems": 50,
+                        "type": "array"
+                      },
+                      "default": {},
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
                     "recentCharacters": {
                       "default": [],
                       "items": {
@@ -2920,7 +3122,8 @@
                   "required": [
                     "tabs",
                     "activeTab",
-                    "recentCharacters"
+                    "recentCharacters",
+                    "cards"
                   ],
                   "type": "object"
                 }
@@ -2954,6 +3157,49 @@
                       "string",
                       "null"
                     ]
+                  },
+                  "cards": {
+                    "additionalProperties": {
+                      "items": {
+                        "properties": {
+                          "character": {
+                            "pattern": "^[a-z0-9]{16}$",
+                            "type": "string"
+                          },
+                          "height": {
+                            "exclusiveMinimum": 0,
+                            "type": "number"
+                          },
+                          "width": {
+                            "exclusiveMinimum": 0,
+                            "type": "number"
+                          },
+                          "x": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "y": {
+                            "minimum": 0,
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "character",
+                          "x",
+                          "y",
+                          "width",
+                          "height"
+                        ],
+                        "type": "object"
+                      },
+                      "maxItems": 50,
+                      "type": "array"
+                    },
+                    "default": {},
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "type": "object"
                   },
                   "recentCharacters": {
                     "default": [],
@@ -2992,6 +3238,50 @@
                         "null"
                       ]
                     },
+                    "cards": {
+                      "additionalProperties": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "character": {
+                              "pattern": "^[a-z0-9]{16}$",
+                              "type": "string"
+                            },
+                            "height": {
+                              "exclusiveMinimum": 0,
+                              "type": "number"
+                            },
+                            "width": {
+                              "exclusiveMinimum": 0,
+                              "type": "number"
+                            },
+                            "x": {
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "y": {
+                              "minimum": 0,
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "character",
+                            "x",
+                            "y",
+                            "width",
+                            "height"
+                          ],
+                          "type": "object"
+                        },
+                        "maxItems": 50,
+                        "type": "array"
+                      },
+                      "default": {},
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
                     "recentCharacters": {
                       "default": [],
                       "items": {
@@ -3012,7 +3302,8 @@
                   "required": [
                     "tabs",
                     "activeTab",
-                    "recentCharacters"
+                    "recentCharacters",
+                    "cards"
                   ],
                   "type": "object"
                 }

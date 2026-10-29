@@ -1,11 +1,14 @@
 import { join } from "node:path";
 import { pino, type Logger } from "pino";
 
-/** The URL with its `token` query parameter removed, so the token never reaches a log. */
+/**
+ * The URL with its `token` query parameter removed, so the token never reaches a log.
+ * The path always starts with exactly one slash, so as a redirect it can't leave the site.
+ */
 export function stripToken(url: string): string {
   const parsed = new URL(url, "http://local");
   parsed.searchParams.delete("token");
-  return parsed.pathname + parsed.search;
+  return `/${parsed.pathname.replace(/^[/\\]+/, "")}${parsed.search}`;
 }
 
 /** The URL's path without any query string. */

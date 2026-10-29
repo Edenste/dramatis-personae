@@ -68,6 +68,16 @@ describe("WorldSession", () => {
     await camelot.cleanup();
   });
 
+  it("numbers every pushed message and reports the latest in the snapshot", async () => {
+    await open();
+    const summary = await sessions.summary(camelot.worldId);
+    const before = session.snapshot(summary).seq;
+    await renameKay("Sir Kay");
+    await renameKay("Kay the Seneschal");
+    expect(session.snapshot(summary).seq).toBe(before + 2);
+    expect(messages.map((m) => m.seq)).toEqual([before + 1, before + 2]);
+  });
+
   it("opens a world for editing with its files and no problems", async () => {
     await open();
     expect(session.readOnly).toBe(false);

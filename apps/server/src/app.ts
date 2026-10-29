@@ -19,10 +19,12 @@ import {
 import type { OptionsFile } from "@dramatis-personae/schema";
 import type { DataPaths } from "./config/data-root.ts";
 import { checkWritable } from "./config/options.ts";
-import type { App, ServerContext } from "./context.ts";
+import type { App, DesktopHooks, ServerContext } from "./context.ts";
 import { notFound, registerErrorHandlers, sendError } from "./http/errors.ts";
 import { stripToken } from "./http/logger.ts";
 import { registerSecurity } from "./http/security.ts";
+import { appStateRoutes } from "./routes/app-state.ts";
+import { desktopRoutes } from "./routes/desktop.ts";
 import { settingsRoutes } from "./routes/settings.ts";
 import { statusRoutes } from "./routes/status.ts";
 import { webRoutes } from "./routes/web.ts";
@@ -53,6 +55,8 @@ export interface ServerOptions {
   optionsProblems?: string[];
   /** Test hook: the user every authenticated request runs as. Defaults to the local owner. */
   user?: User;
+  /** Set by the desktop app, which runs the server in-process. */
+  desktop?: DesktopHooks;
 }
 
 const LOCAL_OWNER: User = { id: "local", role: "owner" };
@@ -79,6 +83,7 @@ export async function buildServer(opts: ServerOptions): Promise<App> {
     dataRoot: await checkWritable(opts.paths),
     openPath: opts.openPath,
     optionsProblems: opts.optionsProblems ?? [],
+    desktop: opts.desktop,
   };
 
   await app.register(fastifySwagger, {
@@ -127,6 +132,8 @@ export async function buildServer(opts: ServerOptions): Promise<App> {
 
   statusRoutes(app, ctx);
   settingsRoutes(app, ctx);
+  desktopRoutes(app, ctx);
+  appStateRoutes(app, ctx);
   worldRoutes(app, ctx, sessions);
   workspaceRoutes(app, ctx, sessions);
   wsRoutes(app, ctx, sessions);

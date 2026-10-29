@@ -15,6 +15,7 @@ import {
 } from "@dramatis-personae/schema";
 import type { App, ServerContext } from "../context.ts";
 import { ApiError } from "../http/errors.ts";
+import { requireRead } from "../http/permissions.ts";
 import type { WorldSessions } from "../worlds/world-sessions.ts";
 
 const World = z.object({ w: IdSchema });
@@ -38,10 +39,6 @@ export function requireDataRoot(ctx: ServerContext): void {
   if (!ctx.dataRoot.writable) {
     throw new ApiError(503, "data-root-unavailable", ctx.dataRoot.problem);
   }
-}
-
-function requireRead(user: { role: "owner" | "editor" | "viewer"; id: string }): void {
-  if (!can(user, "read")) throw new ApiError(403, "forbidden", "You can't open this world");
 }
 
 export function worldRoutes(app: App, ctx: ServerContext, sessions: WorldSessions): void {

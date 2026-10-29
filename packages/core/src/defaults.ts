@@ -16,8 +16,7 @@ import {
   type WorldFile,
 } from "@dramatis-personae/schema";
 
-/** Border colour for characters with no colour of their own or from a role. */
-export const DEFAULT_CHARACTER_COLOR = "#99aab5";
+export { DEFAULT_CHARACTER_COLOR } from "@dramatis-personae/schema";
 
 type TypeDefaults = Pick<RelationshipType, "name" | "direction" | "color" | "line">;
 

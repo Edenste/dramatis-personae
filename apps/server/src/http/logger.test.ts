@@ -12,6 +12,15 @@ describe("stripToken", () => {
   });
 });
 
+describe("stripToken on paths that would leave the site", () => {
+  it.each(["/.//evil.example/x", "/x/..//evil.example/y", "/x/..\\/evil.example/y"])(
+    "keeps %s on the app",
+    (path) => {
+      expect(stripToken(`${path}?token=${TOKEN}`)).toMatch(/^\/(?![/\\])/);
+    },
+  );
+});
+
 describe("server log", () => {
   let server: TestServer;
   afterEach(async () => {
@@ -33,7 +42,7 @@ describe("server log", () => {
     await server.app.inject({
       method: "GET",
       url: "/api/status",
-      headers: { host: HOST, cookie: `dp_token=${TOKEN}` },
+      headers: { host: HOST, cookie: `dp_token_30300=${TOKEN}` },
     });
     logger.flush();
     const log = await readFile(join(logsDir, "server.log"), "utf8");

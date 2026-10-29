@@ -84,6 +84,10 @@ describe("world WebSocket", () => {
     });
     expect(response.status).toBe(200);
     await vi.waitFor(() => expect(changedKeys(messages)).toContain(kayKey), WAIT);
+    const after = await fetch(`${origin}/api/worlds/${camelot.worldId}`, auth);
+    const { seq } = (await after.json()) as { seq: number };
+    expect(seq).toBeGreaterThan(0);
+    expect(messages.at(-1)?.seq).toBe(seq);
     socket.close();
   });
 

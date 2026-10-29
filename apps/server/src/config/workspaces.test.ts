@@ -5,7 +5,7 @@ import { tempDataRoot, type TempDataRoot } from "@dramatis-personae/core/testing
 import { readWorkspace, writeWorkspace } from "./workspaces.ts";
 
 const world = "0v2zt9rkngnagdl3";
-const defaults = { tabs: [], activeTab: null, recentCharacters: [] };
+const defaults = { tabs: [], activeTab: null, recentCharacters: [], cards: {} };
 
 describe("workspace files", () => {
   let temp: TempDataRoot;
@@ -28,6 +28,7 @@ describe("workspace files", () => {
       tabs: ["graph", "dashboard", "character/2mxafd1whkfr51wp"],
       activeTab: "graph",
       recentCharacters: ["2mxafd1whkfr51wp"],
+      cards: {},
     };
     await writeWorkspace(dir, world, workspace);
     expect(await readWorkspace(dir, world)).toEqual(workspace);

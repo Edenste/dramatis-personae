@@ -2,9 +2,17 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { User } from "@dramatis-personae/core";
 import { sendError } from "./errors.ts";
+import { securityHeaders } from "./headers.ts";
 import { stripToken } from "./logger.ts";
 
-export const TOKEN_COOKIE = "dp_token";
+/**
+ * The token cookie's name, from the validated Host. Browsers share cookies
+ * across ports, so each server (desktop app, headless, dev) gets its own.
+ */
+export function tokenCookieName(host: string): string {
+  const port = /:(\d+)$/.exec(host)?.[1] ?? "80";
+  return `dp_token_${port}`;
+}
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -27,10 +35,10 @@ function sameToken(candidate: string | undefined, token: string): boolean {
   return candidate !== undefined && timingSafeEqual(digest(candidate), digest(token));
 }
 
-function presentedToken(request: FastifyRequest): string | undefined {
+function presentedToken(request: FastifyRequest, host: string): string | undefined {
   const header = request.headers.authorization;
   if (header?.startsWith("Bearer ")) return header.slice("Bearer ".length);
-  return request.cookies[TOKEN_COOKIE];
+  return request.cookies[tokenCookieName(host)];
 }
 
 /** Paths a browser navigates to, where the launch link's ?token= is exchanged. */
@@ -43,9 +51,14 @@ const isPage = (path: string) => !path.startsWith("/api") && path !== "/ws";
  */
 export function registerSecurity(app: FastifyInstance, options: SecurityOptions): void {
   app.decorateRequest("user", null as unknown as User);
+  app.addHook("onSend", async (request, reply) => {
+    const host = request.headers.host ?? "";
+    if (options.allowedHosts().includes(host)) reply.headers(securityHeaders(host));
+  });
   app.addHook("onRequest", async (request, reply) => {
     const hosts = options.allowedHosts();
-    if (!hosts.includes(request.headers.host ?? "")) {
+    const host = request.headers.host ?? "";
+    if (!hosts.includes(host)) {
       return sendError(reply, 403, "bad-host", "This server doesn't answer to that host name");
     }
     const origin = request.headers.origin;
@@ -59,7 +72,7 @@ export function registerSecurity(app: FastifyInstance, options: SecurityOptions)
       if (!sameToken(launchToken, options.token)) {
         return sendError(reply, 401, "unauthorized", "That link has expired. Open the app again.");
       }
-      reply.setCookie(TOKEN_COOKIE, options.token, {
+      reply.setCookie(tokenCookieName(host), options.token, {
         httpOnly: true,
         sameSite: "strict",
         path: "/",
@@ -67,7 +80,7 @@ export function registerSecurity(app: FastifyInstance, options: SecurityOptions)
       return reply.redirect(stripToken(request.url), 302);
     }
 
-    if (!sameToken(presentedToken(request), options.token)) {
+    if (!sameToken(presentedToken(request, host), options.token)) {
       return sendError(reply, 401, "unauthorized", "Open the app from its window or launch link");
     }
     request.user = options.user;

@@ -16,6 +16,10 @@ describe("parseArgs", () => {
     expect(parseArgs([])).toEqual({ dev: false });
   });
 
+  it("reads the folder of the built web app", () => {
+    expect(parseArgs(["--web-root", "/w"])).toEqual({ webRoot: "/w", dev: false });
+  });
+
   it("skips the -- separator that package managers pass through", () => {
     expect(parseArgs(["--", "--port", "0", "--dev"])).toEqual({ port: 0, dev: true });
   });

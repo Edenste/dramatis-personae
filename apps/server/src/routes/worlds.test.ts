@@ -129,11 +129,13 @@ describe("world routes", () => {
       tabs: [],
       activeTab: null,
       recentCharacters: [],
+      cards: {},
     });
     const workspace = {
       tabs: ["graph", `character/${kayId}`],
       activeTab: "graph",
       recentCharacters: [kayId],
+      cards: { graph: [{ character: kayId, x: 24, y: 16, width: 280, height: 220 }] },
     };
     expect((await send("PUT", `${base}/workspace`, workspace)).json()).toEqual(workspace);
     const saved = await readFile(

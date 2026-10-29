@@ -4,7 +4,150 @@
  */
 
 export interface paths {
+    "/api/app-state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @default null */
+                            lastWorld: string | null;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @default null */
+                        lastWorld?: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @default null */
+                            lastWorld: string | null;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/data-folder/choose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            path: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/data-folder/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restart": {
         parameters: {
             query?: never;
             header?: never;
@@ -138,6 +281,10 @@ export interface paths {
                     content: {
                         "application/json": {
                             dataRoot: string;
+                            desktop: {
+                                /** @enum {string} */
+                                windowControls: "left" | "right";
+                            } | null;
                             optionsProblem?: string;
                             problem?: string;
                             version: string;
@@ -289,6 +436,7 @@ export interface paths {
                                 };
                             }[];
                             readOnly: boolean;
+                            seq: number;
                             unsaved: {
                                 message: string;
                             } | null;
@@ -1061,6 +1209,16 @@ export interface paths {
                         "application/json": {
                             /** @default null */
                             activeTab: string | null;
+                            /** @default {} */
+                            cards: {
+                                [key: string]: {
+                                    character: string;
+                                    height: number;
+                                    width: number;
+                                    x: number;
+                                    y: number;
+                                }[];
+                            };
                             /** @default [] */
                             recentCharacters: string[];
                             /** @default [] */
@@ -1086,6 +1244,16 @@ export interface paths {
                     "application/json": {
                         /** @default null */
                         activeTab?: string | null;
+                        /** @default {} */
+                        cards?: {
+                            [key: string]: {
+                                character: string;
+                                height: number;
+                                width: number;
+                                x: number;
+                                y: number;
+                            }[];
+                        };
                         /** @default [] */
                         recentCharacters?: string[];
                         /** @default [] */
@@ -1105,6 +1273,16 @@ export interface paths {
                         "application/json": {
                             /** @default null */
                             activeTab: string | null;
+                            /** @default {} */
+                            cards: {
+                                [key: string]: {
+                                    character: string;
+                                    height: number;
+                                    width: number;
+                                    x: number;
+                                    y: number;
+                                }[];
+                            };
                             /** @default [] */
                             recentCharacters: string[];
                             /** @default [] */

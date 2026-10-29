@@ -8,6 +8,7 @@ import {
 import { writeOptions } from "../config/options.ts";
 import type { App, ServerContext } from "../context.ts";
 import { ApiError } from "../http/errors.ts";
+import { requireOwner } from "../http/permissions.ts";
 
 function settingsOf(ctx: ServerContext): Settings {
   return {
@@ -27,6 +28,7 @@ export function settingsRoutes(app: App, ctx: ServerContext): void {
     "/api/settings",
     { schema: { body: SettingsUpdateSchema, response: { 200: SettingsResultSchema } } },
     async (request) => {
+      requireOwner(request.user);
       const { theme, dataPath } = request.body;
       const next: OptionsFile = { ...ctx.options, ...(theme ? { theme } : {}) };
       if (dataPath === null) delete next.dataPath;
@@ -34,11 +36,13 @@ export function settingsRoutes(app: App, ctx: ServerContext): void {
       const restartRequired = (next.dataPath ?? null) !== (ctx.options.dataPath ?? null);
       await writeOptions(ctx.paths.optionsFile, next);
       ctx.options = next;
+      if (theme) ctx.desktop?.appearanceChanged(theme);
       return { settings: settingsOf(ctx), restartRequired };
     },
   );
 
-  app.post("/api/data-folder/open", async (_request, reply) => {
+  app.post("/api/data-folder/open", async (request, reply) => {
+    requireOwner(request.user);
     if (!ctx.openPath) {
       throw new ApiError(501, "not-supported", "Opening folders isn't available here");
     }

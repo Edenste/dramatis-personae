@@ -4,8 +4,10 @@ import type { AddressInfo } from "node:net";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { Logger } from "pino";
+import type { OptionsFile } from "@dramatis-personae/schema";
 import { buildServer } from "./app.ts";
 import { parseArgs } from "./cli.ts";
+import type { DesktopHooks } from "./context.ts";
 import { defaultDataRoot, resolveDataPaths, type DataPaths } from "./config/data-root.ts";
 import { readOptions } from "./config/options.ts";
 import { createLogger } from "./http/logger.ts";
@@ -21,6 +23,8 @@ export interface StartInput {
   webRoot?: string;
   openPath?: (path: string) => Promise<void>;
   version: string;
+  /** Set by the desktop app. */
+  desktop?: DesktopHooks;
 }
 
 export interface RunningServer {
@@ -30,6 +34,8 @@ export interface RunningServer {
   launchUrl: string;
   token: string;
   paths: DataPaths;
+  /** The options read at start-up, such as the theme. */
+  options: OptionsFile;
   close(): Promise<void>;
 }
 
@@ -89,8 +95,9 @@ export async function startServer(input: StartInput): Promise<RunningServer> {
     token,
     version: input.version,
     listenAddress: host,
-    webRoot: input.webRoot,
+    webRoot: input.webRoot ?? args.webRoot,
     openPath: input.openPath,
+    desktop: input.desktop,
     logger,
     optionsProblems,
   });
@@ -104,6 +111,7 @@ export async function startServer(input: StartInput): Promise<RunningServer> {
     launchUrl: `${url}/?token=${token}`,
     token,
     paths,
+    options,
     close: async () => {
       await app.close();
       logger?.flush();

@@ -47,7 +47,7 @@ describe("startServer", () => {
     server = await start();
     const response = await fetch(server.launchUrl, { redirect: "manual" });
     expect(response.status).toBe(302);
-    expect(response.headers.get("set-cookie")).toContain("dp_token=");
+    expect(response.headers.get("set-cookie")).toMatch(/dp_token_\d+=/);
     expect(response.headers.get("location")).toBe("/");
   });
 

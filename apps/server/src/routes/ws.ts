@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { IdSchema } from "@dramatis-personae/schema";
+import { can } from "@dramatis-personae/core";
 import type { App, ServerContext } from "../context.ts";
 import type { WorldSessions } from "../worlds/world-sessions.ts";
 
@@ -19,6 +20,10 @@ export function wsRoutes(app: App, ctx: ServerContext, sessions: WorldSessions):
     { websocket: true, schema: { hide: true, querystring: z.object({ world: z.string() }) } },
     (socket, request) => {
       const world = request.query.world;
+      if (!can(request.user, "read")) {
+        socket.close(WORLD_UNAVAILABLE, "You can't open this world");
+        return;
+      }
       if (!ctx.dataRoot.writable || !IdSchema.safeParse(world).success) {
         socket.close(WORLD_UNAVAILABLE, "No such world");
         return;

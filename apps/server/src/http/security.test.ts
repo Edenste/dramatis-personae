@@ -21,7 +21,7 @@ describe("request security", () => {
   });
 
   it("refuses a foreign Origin, even with a valid cookie", async () => {
-    const cookie = `dp_token=${TOKEN}`;
+    const cookie = `dp_token_30300=${TOKEN}`;
     const foreign = await status({ host: HOST, cookie, origin: "https://evil.example" });
     expect(foreign.statusCode).toBe(403);
     expect(foreign.json()).toMatchObject({ code: "bad-origin" });
@@ -34,7 +34,7 @@ describe("request security", () => {
     expect(none.statusCode).toBe(401);
     expect(none.json()).toMatchObject({ code: "unauthorized" });
     expect((await status({ host: HOST, authorization: "Bearer wrong" })).statusCode).toBe(401);
-    expect((await status({ host: HOST, cookie: "dp_token=wrong" })).statusCode).toBe(401);
+    expect((await status({ host: HOST, cookie: "dp_token_30300=wrong" })).statusCode).toBe(401);
   });
 
   it("swaps the launch token for a cookie and drops it from the address", async () => {
@@ -46,14 +46,14 @@ describe("request security", () => {
     expect(response.statusCode).toBe(302);
     expect(response.headers.location).toBe("/?tab=graph");
     const setCookie = String(response.headers["set-cookie"]);
-    expect(setCookie).toContain(`dp_token=${TOKEN}`);
+    expect(setCookie).toContain(`dp_token_30300=${TOKEN}`);
     expect(setCookie).toContain("HttpOnly");
     expect(setCookie).toContain("SameSite=Strict");
 
     const page = await server.app.inject({
       method: "GET",
       url: "/?tab=graph",
-      headers: { host: HOST, cookie: `dp_token=${TOKEN}` },
+      headers: { host: HOST, cookie: `dp_token_30300=${TOKEN}` },
     });
     expect(page.statusCode).toBe(200);
   });
@@ -66,6 +66,27 @@ describe("request security", () => {
     });
     expect(response.statusCode).toBe(401);
     expect(response.headers["set-cookie"]).toBeUndefined();
+  });
+
+  it.each(["//evil.example/x", "/\\evil.example/x"])(
+    "keeps the launch redirect on the app for %s",
+    async (path) => {
+      const response = await server.app.inject({
+        method: "GET",
+        url: `${path}?token=${TOKEN}`,
+        headers: { host: HOST },
+      });
+      expect(response.statusCode).toBe(302);
+      const location = String(response.headers.location);
+      expect(location.startsWith("/")).toBe(true);
+      expect(location.startsWith("//")).toBe(false);
+      expect(location.startsWith("/\\")).toBe(false);
+    },
+  );
+
+  it("names the cookie after the port, and no longer accepts the old name", async () => {
+    expect((await status({ host: HOST, cookie: `dp_token=${TOKEN}` })).statusCode).toBe(401);
+    expect((await status({ host: HOST, cookie: `dp_token_30300=${TOKEN}` })).statusCode).toBe(200);
   });
 
   it("serves a placeholder page when there is no web app", async () => {

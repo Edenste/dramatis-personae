@@ -8,6 +8,8 @@ export interface DataPaths {
   dataRoot: string;
   optionsFile: string;
   workspacesDir: string;
+  /** App-wide interface state, such as the last world opened. */
+  appStateFile: string;
   worldsDir: string;
   logsDir: string;
   /** Which setting chose `dataRoot`. */
@@ -64,6 +66,7 @@ export function resolveDataPaths(input: {
     dataRoot,
     optionsFile: join(defaultRoot, "Config", "options.json"),
     workspacesDir: join(dataRoot, "Config", "workspaces"),
+    appStateFile: join(dataRoot, "Config", "app-state.json"),
     worldsDir: join(dataRoot, "Data", "worlds"),
     logsDir: join(dataRoot, "Logs"),
     source,

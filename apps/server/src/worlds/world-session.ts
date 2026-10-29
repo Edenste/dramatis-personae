@@ -27,6 +27,13 @@ import {
 import { ApiError } from "../http/errors.ts";
 import { SerialQueue } from "./serial-queue.ts";
 
+/** A pushed message before the session gives it a sequence number. */
+type UnnumberedMessage = ServerMessage extends infer M
+  ? M extends unknown
+    ? Omit<M, "seq">
+    : never
+  : never;
+
 export interface SessionOptions extends OpenWorldOptions {
   /** Hears about problems that don't stop the world working, for the log. */
   onWarning?: (message: string) => void;
@@ -79,6 +86,8 @@ export class WorldSession {
   private writing: Writing | null = null;
   private readonly queue = new SerialQueue();
   private readonly listeners = new Set<(message: ServerMessage) => void>();
+  /** Counts pushed messages; a snapshot reports the latest, so clients can drop older pushes. */
+  private seq = 0;
   private stopWatching: () => void = () => undefined;
 
   private constructor(
@@ -143,6 +152,7 @@ export class WorldSession {
       unsaved: this.unsaved,
       files: this.current.files(),
       problems: this.current.problems(),
+      seq: this.seq,
     };
   }
 
@@ -380,7 +390,9 @@ export class WorldSession {
     }
   }
 
-  private emit(message: ServerMessage): void {
-    for (const listener of this.listeners) listener(message);
+  private emit(message: UnnumberedMessage): void {
+    this.seq += 1;
+    const numbered: ServerMessage = { ...message, seq: this.seq };
+    for (const listener of this.listeners) listener(numbered);
   }
 }

@@ -7,3 +7,4 @@ export * from "./json-schema.ts";
 export * from "./commands.ts";
 export * from "./config.ts";
 export * from "./api.ts";
+export * from "./colour.ts";

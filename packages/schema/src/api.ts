@@ -31,6 +31,9 @@ export const FileEntrySchema = z.object({
 });
 export type FileEntry = z.infer<typeof FileEntrySchema>;
 
+/** Counts the messages a world has pushed; a client ignores any push not newer than its snapshot. */
+const SeqSchema = z.number().int().min(0);
+
 export const WorldSnapshotSchema = z.object({
   world: WorldSummarySchema,
   readOnly: z.boolean(),
@@ -38,6 +41,8 @@ export const WorldSnapshotSchema = z.object({
   unsaved: z.object({ message: z.string() }).nullable(),
   files: z.array(FileEntrySchema),
   problems: z.array(ProblemSchema),
+  /** The sequence number of the last message pushed before this snapshot was taken. */
+  seq: SeqSchema,
 });
 export type WorldSnapshot = z.infer<typeof WorldSnapshotSchema>;
 
@@ -68,8 +73,14 @@ export const StatusSchema = z.object({
   problem: z.string().optional(),
   /** Why options.json was partly or wholly ignored. */
   optionsProblem: z.string().optional(),
+  /** Set when the desktop app runs the server: which side its window buttons sit on. */
+  desktop: z.object({ windowControls: z.enum(["left", "right"]) }).nullable(),
 });
 export type Status = z.infer<typeof StatusSchema>;
+
+/** The folder picked in the desktop app's folder picker, or null if it was cancelled. */
+export const ChooseFolderResultSchema = z.object({ path: z.string().nullable() });
+export type ChooseFolderResult = z.infer<typeof ChooseFolderResultSchema>;
 
 export const SettingsSchema = z.object({
   dataRoot: z.string(),
@@ -97,29 +108,37 @@ export const SettingsResultSchema = z.object({
 });
 export type SettingsResult = z.infer<typeof SettingsResultSchema>;
 
-/** Messages the server pushes over the world's WebSocket. */
+/** Messages the server pushes over the world's WebSocket, each with the world's next `seq`. */
 export const ServerMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("changed"),
     world: IdSchema,
+    seq: SeqSchema,
     files: z.array(FileEntrySchema),
     /** Ref keys of removed files. */
     removed: z.array(z.string()),
   }),
-  z.object({ type: z.literal("problems"), world: IdSchema, problems: z.array(ProblemSchema) }),
+  z.object({
+    type: z.literal("problems"),
+    world: IdSchema,
+    seq: SeqSchema,
+    problems: z.array(ProblemSchema),
+  }),
   z.object({
     type: z.literal("conflict"),
     world: IdSchema,
+    seq: SeqSchema,
     refs: z.array(z.string()),
     message: z.string(),
   }),
   z.object({
     type: z.literal("save-state"),
     world: IdSchema,
+    seq: SeqSchema,
     unsaved: z.boolean(),
     message: z.string().optional(),
   }),
   /** The world was reloaded from disk; fetch a new snapshot. */
-  z.object({ type: z.literal("reload"), world: IdSchema }),
+  z.object({ type: z.literal("reload"), world: IdSchema, seq: SeqSchema }),
 ]);
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;

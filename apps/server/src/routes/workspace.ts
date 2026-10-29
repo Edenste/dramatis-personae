@@ -2,6 +2,7 @@ import { z } from "zod";
 import { IdSchema, WorkspaceFileSchema } from "@dramatis-personae/schema";
 import { readWorkspace, writeWorkspace } from "../config/workspaces.ts";
 import type { App, ServerContext } from "../context.ts";
+import { requireRead } from "../http/permissions.ts";
 import type { WorldSessions } from "../worlds/world-sessions.ts";
 
 const World = z.object({ w: IdSchema });
@@ -12,6 +13,7 @@ export function workspaceRoutes(app: App, ctx: ServerContext, sessions: WorldSes
     "/api/worlds/:w/workspace",
     { schema: { params: World, response: { 200: WorkspaceFileSchema } } },
     async (request) => {
+      requireRead(request.user);
       await sessions.summary(request.params.w);
       return readWorkspace(ctx.paths.workspacesDir, request.params.w);
     },
@@ -27,6 +29,7 @@ export function workspaceRoutes(app: App, ctx: ServerContext, sessions: WorldSes
       },
     },
     async (request) => {
+      requireRead(request.user);
       await sessions.summary(request.params.w);
       await writeWorkspace(ctx.paths.workspacesDir, request.params.w, request.body);
       return request.body;

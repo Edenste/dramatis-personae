@@ -2,6 +2,8 @@ export interface CliArgs {
   dataPath?: string;
   port?: number;
   host?: string;
+  /** The built web app to serve. */
+  webRoot?: string;
   dev: boolean;
 }
 
@@ -10,6 +12,7 @@ export const USAGE = `Usage: dramatis-personae-server [options]
   --data-path <dir>  Where worlds, backups and logs live (or DRAMATIS_DATA_PATH)
   --port <n>         Port to listen on (default: options.json, then 30300)
   --host <address>   Address to listen on (default: 127.0.0.1)
+  --web-root <dir>   The built web app to serve (default: apps/web/dist when present)
   --dev              Use the development data folder (or DRAMATIS_DEV=1)`;
 
 function fail(message: string): never {
@@ -38,6 +41,9 @@ export function parseArgs(argv: string[]): CliArgs {
         break;
       case "--host":
         args.host = value();
+        break;
+      case "--web-root":
+        args.webRoot = value();
         break;
       case "--port": {
         const port = Number(value());
