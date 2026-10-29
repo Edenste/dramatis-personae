@@ -12,3 +12,22 @@ if (!window.matchMedia) {
       dispatchEvent: () => false,
     }) as MediaQueryList;
 }
+
+// jsdom has no Web Animations API, which Svelte's transitions use: finish at once.
+if (!Element.prototype.animate) {
+  Element.prototype.animate = function () {
+    const animation = {
+      onfinish: null as (() => void) | null,
+      oncancel: null as (() => void) | null,
+      currentTime: 0,
+      playState: "finished",
+      finished: Promise.resolve(),
+      cancel() {},
+      finish() {},
+      play() {},
+      pause() {},
+    };
+    queueMicrotask(() => animation.onfinish?.());
+    return animation as unknown as Animation;
+  };
+}
