@@ -1,0 +1,27 @@
+{
+  "name": "@dramatis-personae/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings"
+  },
+  "dependencies": {
+    "@dramatis-personae/api-client": "workspace:*",
+    "@dramatis-personae/graph": "workspace:*",
+    "@dramatis-personae/schema": "workspace:*",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@lucide/svelte": "^1.64.0",
+    "svelte": "^5.57.3"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@testing-library/svelte": "^5.4.2",
+    "jsdom": "^30.1.3",
+    "svelte-check": "^4.7.7",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}

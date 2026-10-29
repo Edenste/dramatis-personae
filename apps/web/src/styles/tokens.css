@@ -1,0 +1,96 @@
+/*
+ * Design tokens (ADR 0012). Every colour, size, shadow and duration in the
+ * interface comes from here. tokens.test.ts checks the colour contrast.
+ */
+
+:root {
+  --color-frame: #e9e9eb;
+  --color-page: #ffffff;
+  --color-surface: #ffffff;
+  --color-fill: #f2f2f7;
+  --color-hover: rgba(0, 0, 0, 0.05);
+  --color-hairline: #e5e5ea;
+  --color-outline: #d1d1d6;
+  --color-text: #1d1d1f;
+  --color-text-secondary: #636366;
+  --color-text-disabled: #8e8e93;
+  --color-accent: #0071e3;
+  --color-accent-stroke: #0071e3;
+  --color-warning: #ff9f0a;
+  --color-on-warning: #1d1d1f;
+  --color-danger: #d70015;
+  --color-scrim: rgba(0, 0, 0, 0.18);
+  --color-character-default: #99aab5;
+
+  --shadow-raised: 0 0 0 1px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-floating: 0 0 0 1px rgba(0, 0, 0, 0.09), 0 12px 32px rgba(0, 0, 0, 0.12);
+
+  --radius-page: 10px;
+  --radius-card: 12px;
+  --radius-menu: 10px;
+  --radius-control: 6px;
+  --radius-chip: 5px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-md: 15px;
+  --text-lg: 22px;
+  --text-xl: 28px;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  --size-titlebar: 38px;
+  --size-control: 26px;
+
+  --motion-enter: 200ms;
+  --motion-exit: 150ms;
+  --motion-tab: 120ms;
+  --motion-hover: 80ms;
+  --ease-settle: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --color-frame: #2c2c2e;
+  --color-page: #1c1c1e;
+  --color-surface: #2c2c2e;
+  --color-fill: #3a3a3c;
+  --color-hover: rgba(255, 255, 255, 0.07);
+  --color-hairline: #38383a;
+  --color-outline: #48484a;
+  --color-text: #f5f5f7;
+  --color-text-secondary: #98989d;
+  --color-text-disabled: #636366;
+  --color-accent: #0071e3;
+  --color-accent-stroke: #0a84ff;
+  --color-warning: #ff9f0a;
+  --color-on-warning: #1d1d1f;
+  --color-danger: #ff6961;
+  --color-scrim: rgba(0, 0, 0, 0.35);
+
+  --shadow-raised: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-floating: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 32px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
+/* Before the app sets data-theme, follow the system so the first paint matches. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-frame: #2c2c2e;
+    --color-page: #1c1c1e;
+    --color-surface: #2c2c2e;
+    --color-text: #f5f5f7;
+    --color-text-secondary: #98989d;
+    color-scheme: dark;
+  }
+}

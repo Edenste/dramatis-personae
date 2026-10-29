@@ -11,19 +11,27 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "dev": "tsx scripts/dev.ts",
     "test": "vitest run",
     "check:boundaries": "node --experimental-strip-types --no-warnings scripts/check-boundaries.ts",
     "generate:api": "pnpm --filter @dramatis-personae/server openapi && pnpm --filter @dramatis-personae/api-client generate"
   },
   "devDependencies": {
+    "@dramatis-personae/server": "workspace:*",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.5",
     "eslint": "^10.13.0",
     "eslint-plugin-import-x": "^4.17.1",
+    "eslint-plugin-svelte": "^3.23.1",
     "globals": "^17.13.0",
     "prettier": "^3.9.10",
+    "prettier-plugin-svelte": "^4.1.1",
+    "svelte": "^5.57.3",
+    "svelte-eslint-parser": "^1.10.0",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5",
     "vitest": "^5.0.5"
   }
 }
