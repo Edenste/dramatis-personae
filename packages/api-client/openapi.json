@@ -914,6 +914,1718 @@
         }
       }
     },
+    "/api/worlds/{w}/characters/{id}/portrait": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "w",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9]{16}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9]{16}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "fingerprints": {
+                      "additionalProperties": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "inverse": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "commands": {
+                          "items": {
+                            "oneOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "name": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "world.rename"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "name"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "character": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "body": {
+                                        "type": "string"
+                                      },
+                                      "color": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^#[0-9a-fA-F]{6}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "extraFields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "fields": {
+                                        "additionalProperties": {},
+                                        "propertyNames": {
+                                          "type": "string"
+                                        },
+                                        "type": "object"
+                                      },
+                                      "id": {
+                                        "pattern": "^[a-z0-9]{16}$",
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "portrait": {
+                                        "anyOf": [
+                                          {
+                                            "additionalProperties": {},
+                                            "properties": {
+                                              "crop": {
+                                                "additionalProperties": {},
+                                                "properties": {
+                                                  "size": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  },
+                                                  "x": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  },
+                                                  "y": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "x",
+                                                  "y",
+                                                  "size"
+                                                ],
+                                                "type": "object"
+                                              },
+                                              "file": {
+                                                "minLength": 1,
+                                                "pattern": "^[^/\\\\]+$",
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "file",
+                                              "crop"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "roles": {
+                                        "items": {
+                                          "pattern": "^[a-z0-9]{16}$",
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "templates": {
+                                        "items": {
+                                          "pattern": "^[a-z0-9]{16}$",
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      }
+                                    },
+                                    "required": [
+                                      "name"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "character.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "character"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "body": {
+                                        "type": "string"
+                                      },
+                                      "color": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^#[0-9a-fA-F]{6}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "extraFields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "portrait": {
+                                        "anyOf": [
+                                          {
+                                            "additionalProperties": {},
+                                            "properties": {
+                                              "crop": {
+                                                "additionalProperties": {},
+                                                "properties": {
+                                                  "size": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  },
+                                                  "x": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  },
+                                                  "y": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "x",
+                                                  "y",
+                                                  "size"
+                                                ],
+                                                "type": "object"
+                                              },
+                                              "file": {
+                                                "minLength": 1,
+                                                "pattern": "^[^/\\\\]+$",
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "file",
+                                              "crop"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "roles": {
+                                        "items": {
+                                          "pattern": "^[a-z0-9]{16}$",
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "templates": {
+                                        "items": {
+                                          "pattern": "^[a-z0-9]{16}$",
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "setFields": {
+                                    "additionalProperties": {},
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "character.update"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "unsetFields": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "character.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "field": {
+                                    "additionalProperties": {},
+                                    "properties": {
+                                      "calendar": {
+                                        "additionalProperties": {},
+                                        "properties": {
+                                          "color": {
+                                            "anyOf": [
+                                              {
+                                                "pattern": "^#[0-9a-fA-F]{6}$",
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "show": {
+                                            "type": "boolean"
+                                          },
+                                          "title": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "show",
+                                          "color",
+                                          "title"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "default": {
+                                        "type": "boolean"
+                                      },
+                                      "key": {
+                                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                                        "type": "string"
+                                      },
+                                      "label": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "options": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "section": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "text",
+                                          "number",
+                                          "date",
+                                          "colour",
+                                          "select",
+                                          "multiselect",
+                                          "character",
+                                          "measurement"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "key",
+                                      "label",
+                                      "type",
+                                      "default"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "field"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "default": {
+                                        "type": "boolean"
+                                      },
+                                      "label": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "options": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "text",
+                                          "number",
+                                          "date",
+                                          "colour",
+                                          "select",
+                                          "multiselect",
+                                          "character",
+                                          "measurement"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.update"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key",
+                                  "set"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "index": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.move"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key",
+                                  "index"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "anyOf": [
+                                      {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "fields.setSubtitle"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "template": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "fields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "id": {
+                                        "pattern": "^[a-z0-9]{16}$",
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "role": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^[a-z0-9]{16}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "name"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "template"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "fields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "role": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^[a-z0-9]{16}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.update"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "set"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "index": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.move"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "index"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "files": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "data": {},
+                                        "fileName": {
+                                          "anyOf": [
+                                            {
+                                              "minLength": 1,
+                                              "pattern": "^[^/\\\\]+$",
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "ref": {
+                                          "anyOf": [
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "kind": {
+                                                  "enum": [
+                                                    "world"
+                                                  ],
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "kind"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "kind": {
+                                                  "enum": [
+                                                    "fields",
+                                                    "roles",
+                                                    "relationshipTypes",
+                                                    "templates"
+                                                  ],
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "kind"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "id": {
+                                                  "pattern": "^[a-z0-9]{16}$",
+                                                  "type": "string"
+                                                },
+                                                "kind": {
+                                                  "enum": [
+                                                    "character",
+                                                    "relationship",
+                                                    "event",
+                                                    "view",
+                                                    "search"
+                                                  ],
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "kind",
+                                                "id"
+                                              ],
+                                              "type": "object"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "ref",
+                                        "fileName",
+                                        "data"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "restore"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "files"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          },
+                          "type": "array"
+                        },
+                        "expect": {
+                          "additionalProperties": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "commands"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "inverse",
+                    "fingerprints"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "x",
+            "required": true,
+            "schema": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "y",
+            "required": true,
+            "schema": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": true,
+            "schema": {
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "path",
+            "name": "w",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9]{16}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9]{16}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "fingerprints": {
+                      "additionalProperties": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "inverse": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "commands": {
+                          "items": {
+                            "oneOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "name": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "world.rename"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "name"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "character": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "body": {
+                                        "type": "string"
+                                      },
+                                      "color": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^#[0-9a-fA-F]{6}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "extraFields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "fields": {
+                                        "additionalProperties": {},
+                                        "propertyNames": {
+                                          "type": "string"
+                                        },
+                                        "type": "object"
+                                      },
+                                      "id": {
+                                        "pattern": "^[a-z0-9]{16}$",
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "portrait": {
+                                        "anyOf": [
+                                          {
+                                            "additionalProperties": {},
+                                            "properties": {
+                                              "crop": {
+                                                "additionalProperties": {},
+                                                "properties": {
+                                                  "size": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  },
+                                                  "x": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  },
+                                                  "y": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "x",
+                                                  "y",
+                                                  "size"
+                                                ],
+                                                "type": "object"
+                                              },
+                                              "file": {
+                                                "minLength": 1,
+                                                "pattern": "^[^/\\\\]+$",
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "file",
+                                              "crop"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "roles": {
+                                        "items": {
+                                          "pattern": "^[a-z0-9]{16}$",
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "templates": {
+                                        "items": {
+                                          "pattern": "^[a-z0-9]{16}$",
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      }
+                                    },
+                                    "required": [
+                                      "name"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "character.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "character"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "body": {
+                                        "type": "string"
+                                      },
+                                      "color": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^#[0-9a-fA-F]{6}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "extraFields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "portrait": {
+                                        "anyOf": [
+                                          {
+                                            "additionalProperties": {},
+                                            "properties": {
+                                              "crop": {
+                                                "additionalProperties": {},
+                                                "properties": {
+                                                  "size": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  },
+                                                  "x": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  },
+                                                  "y": {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "x",
+                                                  "y",
+                                                  "size"
+                                                ],
+                                                "type": "object"
+                                              },
+                                              "file": {
+                                                "minLength": 1,
+                                                "pattern": "^[^/\\\\]+$",
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "file",
+                                              "crop"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "roles": {
+                                        "items": {
+                                          "pattern": "^[a-z0-9]{16}$",
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "templates": {
+                                        "items": {
+                                          "pattern": "^[a-z0-9]{16}$",
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "setFields": {
+                                    "additionalProperties": {},
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "character.update"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "unsetFields": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "character.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "field": {
+                                    "additionalProperties": {},
+                                    "properties": {
+                                      "calendar": {
+                                        "additionalProperties": {},
+                                        "properties": {
+                                          "color": {
+                                            "anyOf": [
+                                              {
+                                                "pattern": "^#[0-9a-fA-F]{6}$",
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "show": {
+                                            "type": "boolean"
+                                          },
+                                          "title": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "show",
+                                          "color",
+                                          "title"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "default": {
+                                        "type": "boolean"
+                                      },
+                                      "key": {
+                                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                                        "type": "string"
+                                      },
+                                      "label": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "options": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "section": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "text",
+                                          "number",
+                                          "date",
+                                          "colour",
+                                          "select",
+                                          "multiselect",
+                                          "character",
+                                          "measurement"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "key",
+                                      "label",
+                                      "type",
+                                      "default"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "field"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "default": {
+                                        "type": "boolean"
+                                      },
+                                      "label": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "options": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "text",
+                                          "number",
+                                          "date",
+                                          "colour",
+                                          "select",
+                                          "multiselect",
+                                          "character",
+                                          "measurement"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.update"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key",
+                                  "set"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "index": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.move"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key",
+                                  "index"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "anyOf": [
+                                      {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "fields.setSubtitle"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "template": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "fields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "id": {
+                                        "pattern": "^[a-z0-9]{16}$",
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "role": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^[a-z0-9]{16}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "name"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "template"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "fields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "role": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^[a-z0-9]{16}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.update"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "set"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "index": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.move"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "index"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "files": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "data": {},
+                                        "fileName": {
+                                          "anyOf": [
+                                            {
+                                              "minLength": 1,
+                                              "pattern": "^[^/\\\\]+$",
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "ref": {
+                                          "anyOf": [
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "kind": {
+                                                  "enum": [
+                                                    "world"
+                                                  ],
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "kind"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "kind": {
+                                                  "enum": [
+                                                    "fields",
+                                                    "roles",
+                                                    "relationshipTypes",
+                                                    "templates"
+                                                  ],
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "kind"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "id": {
+                                                  "pattern": "^[a-z0-9]{16}$",
+                                                  "type": "string"
+                                                },
+                                                "kind": {
+                                                  "enum": [
+                                                    "character",
+                                                    "relationship",
+                                                    "event",
+                                                    "view",
+                                                    "search"
+                                                  ],
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "kind",
+                                                "id"
+                                              ],
+                                              "type": "object"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "ref",
+                                        "fileName",
+                                        "data"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "restore"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "files"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          },
+                          "type": "array"
+                        },
+                        "expect": {
+                          "additionalProperties": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "commands"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "inverse",
+                    "fingerprints"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        }
+      }
+    },
     "/api/worlds/{w}/commands": {
       "post": {
         "parameters": [
@@ -1206,6 +2918,362 @@
                             "type": {
                               "enum": [
                                 "character.delete"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "id"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "properties": {
+                            "field": {
+                              "additionalProperties": {},
+                              "properties": {
+                                "calendar": {
+                                  "additionalProperties": {},
+                                  "properties": {
+                                    "color": {
+                                      "anyOf": [
+                                        {
+                                          "pattern": "^#[0-9a-fA-F]{6}$",
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "show": {
+                                      "type": "boolean"
+                                    },
+                                    "title": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "show",
+                                    "color",
+                                    "title"
+                                  ],
+                                  "type": "object"
+                                },
+                                "default": {
+                                  "type": "boolean"
+                                },
+                                "key": {
+                                  "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "options": {
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "section": {
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "enum": [
+                                    "text",
+                                    "number",
+                                    "date",
+                                    "colour",
+                                    "select",
+                                    "multiselect",
+                                    "character",
+                                    "measurement"
+                                  ],
+                                  "type": "string"
+                                },
+                                "unit": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "label",
+                                "type",
+                                "default"
+                              ],
+                              "type": "object"
+                            },
+                            "type": {
+                              "enum": [
+                                "field.create"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "field"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "properties": {
+                            "key": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "set": {
+                              "properties": {
+                                "default": {
+                                  "type": "boolean"
+                                },
+                                "label": {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "options": {
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "type": {
+                                  "enum": [
+                                    "text",
+                                    "number",
+                                    "date",
+                                    "colour",
+                                    "select",
+                                    "multiselect",
+                                    "character",
+                                    "measurement"
+                                  ],
+                                  "type": "string"
+                                },
+                                "unit": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "type": {
+                              "enum": [
+                                "field.update"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "key",
+                            "set"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "properties": {
+                            "index": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "key": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "type": {
+                              "enum": [
+                                "field.move"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "key",
+                            "index"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "properties": {
+                            "key": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "type": {
+                              "enum": [
+                                "field.delete"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "key"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "properties": {
+                            "key": {
+                              "anyOf": [
+                                {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "type": {
+                              "enum": [
+                                "fields.setSubtitle"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "key"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "properties": {
+                            "template": {
+                              "properties": {
+                                "fields": {
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "id": {
+                                  "pattern": "^[a-z0-9]{16}$",
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "role": {
+                                  "anyOf": [
+                                    {
+                                      "pattern": "^[a-z0-9]{16}$",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "name"
+                              ],
+                              "type": "object"
+                            },
+                            "type": {
+                              "enum": [
+                                "template.create"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "template"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "properties": {
+                            "id": {
+                              "pattern": "^[a-z0-9]{16}$",
+                              "type": "string"
+                            },
+                            "set": {
+                              "properties": {
+                                "fields": {
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "name": {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "role": {
+                                  "anyOf": [
+                                    {
+                                      "pattern": "^[a-z0-9]{16}$",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "type": {
+                              "enum": [
+                                "template.update"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "id",
+                            "set"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "properties": {
+                            "id": {
+                              "pattern": "^[a-z0-9]{16}$",
+                              "type": "string"
+                            },
+                            "index": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "type": {
+                              "enum": [
+                                "template.move"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "id",
+                            "index"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "properties": {
+                            "id": {
+                              "pattern": "^[a-z0-9]{16}$",
+                              "type": "string"
+                            },
+                            "type": {
+                              "enum": [
+                                "template.delete"
                               ],
                               "type": "string"
                             }
@@ -1643,6 +3711,374 @@
                                   "type": {
                                     "enum": [
                                       "character.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "field": {
+                                    "additionalProperties": {},
+                                    "properties": {
+                                      "calendar": {
+                                        "additionalProperties": {},
+                                        "properties": {
+                                          "color": {
+                                            "anyOf": [
+                                              {
+                                                "pattern": "^#[0-9a-fA-F]{6}$",
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "show": {
+                                            "type": "boolean"
+                                          },
+                                          "title": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "show",
+                                          "color",
+                                          "title"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "default": {
+                                        "type": "boolean"
+                                      },
+                                      "key": {
+                                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                                        "type": "string"
+                                      },
+                                      "label": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "options": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "section": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "text",
+                                          "number",
+                                          "date",
+                                          "colour",
+                                          "select",
+                                          "multiselect",
+                                          "character",
+                                          "measurement"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "key",
+                                      "label",
+                                      "type",
+                                      "default"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "field"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "default": {
+                                        "type": "boolean"
+                                      },
+                                      "label": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "options": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "text",
+                                          "number",
+                                          "date",
+                                          "colour",
+                                          "select",
+                                          "multiselect",
+                                          "character",
+                                          "measurement"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.update"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key",
+                                  "set"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "index": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.move"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key",
+                                  "index"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "anyOf": [
+                                      {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "fields.setSubtitle"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "template": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "fields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "id": {
+                                        "pattern": "^[a-z0-9]{16}$",
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "role": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^[a-z0-9]{16}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "name"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "template"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "fields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "role": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^[a-z0-9]{16}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.update"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "set"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "index": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.move"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "index"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.delete"
                                     ],
                                     "type": "string"
                                   }
@@ -2244,6 +4680,374 @@
                               {
                                 "additionalProperties": false,
                                 "properties": {
+                                  "field": {
+                                    "additionalProperties": {},
+                                    "properties": {
+                                      "calendar": {
+                                        "additionalProperties": {},
+                                        "properties": {
+                                          "color": {
+                                            "anyOf": [
+                                              {
+                                                "pattern": "^#[0-9a-fA-F]{6}$",
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "show": {
+                                            "type": "boolean"
+                                          },
+                                          "title": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "show",
+                                          "color",
+                                          "title"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "default": {
+                                        "type": "boolean"
+                                      },
+                                      "key": {
+                                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                                        "type": "string"
+                                      },
+                                      "label": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "options": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "section": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "text",
+                                          "number",
+                                          "date",
+                                          "colour",
+                                          "select",
+                                          "multiselect",
+                                          "character",
+                                          "measurement"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "key",
+                                      "label",
+                                      "type",
+                                      "default"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "field"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "default": {
+                                        "type": "boolean"
+                                      },
+                                      "label": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "options": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "text",
+                                          "number",
+                                          "date",
+                                          "colour",
+                                          "select",
+                                          "multiselect",
+                                          "character",
+                                          "measurement"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.update"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key",
+                                  "set"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "index": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.move"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key",
+                                  "index"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "anyOf": [
+                                      {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "fields.setSubtitle"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "template": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "fields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "id": {
+                                        "pattern": "^[a-z0-9]{16}$",
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "role": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^[a-z0-9]{16}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "name"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "template"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "fields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "role": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^[a-z0-9]{16}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.update"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "set"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "index": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.move"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "index"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
                                   "files": {
                                     "items": {
                                       "additionalProperties": false,
@@ -2829,6 +5633,374 @@
                                   "type": {
                                     "enum": [
                                       "character.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "field": {
+                                    "additionalProperties": {},
+                                    "properties": {
+                                      "calendar": {
+                                        "additionalProperties": {},
+                                        "properties": {
+                                          "color": {
+                                            "anyOf": [
+                                              {
+                                                "pattern": "^#[0-9a-fA-F]{6}$",
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "show": {
+                                            "type": "boolean"
+                                          },
+                                          "title": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "show",
+                                          "color",
+                                          "title"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "default": {
+                                        "type": "boolean"
+                                      },
+                                      "key": {
+                                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                                        "type": "string"
+                                      },
+                                      "label": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "options": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "section": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "text",
+                                          "number",
+                                          "date",
+                                          "colour",
+                                          "select",
+                                          "multiselect",
+                                          "character",
+                                          "measurement"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "key",
+                                      "label",
+                                      "type",
+                                      "default"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "field"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "default": {
+                                        "type": "boolean"
+                                      },
+                                      "label": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "options": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "text",
+                                          "number",
+                                          "date",
+                                          "colour",
+                                          "select",
+                                          "multiselect",
+                                          "character",
+                                          "measurement"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.update"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key",
+                                  "set"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "index": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.move"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key",
+                                  "index"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "field.delete"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "key": {
+                                    "anyOf": [
+                                      {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "fields.setSubtitle"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "key"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "template": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "fields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "id": {
+                                        "pattern": "^[a-z0-9]{16}$",
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "role": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^[a-z0-9]{16}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "name"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.create"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "template"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "set": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "fields": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "name": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "role": {
+                                        "anyOf": [
+                                          {
+                                            "pattern": "^[a-z0-9]{16}$",
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.update"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "set"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "index": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.move"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "index"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "pattern": "^[a-z0-9]{16}$",
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "template.delete"
                                     ],
                                     "type": "string"
                                   }

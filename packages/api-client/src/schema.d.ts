@@ -553,6 +553,400 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/worlds/{w}/characters/{id}/portrait": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query: {
+                    x: number;
+                    y: number;
+                    size: number;
+                };
+                header?: never;
+                path: {
+                    w: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            fingerprints: {
+                                [key: string]: string | null;
+                            };
+                            inverse: {
+                                commands: ({
+                                    name: string;
+                                    /** @enum {string} */
+                                    type: "world.rename";
+                                } | {
+                                    character: {
+                                        body?: string;
+                                        color?: string | null;
+                                        extraFields?: string[];
+                                        fields?: {
+                                            [key: string]: unknown;
+                                        };
+                                        id?: string;
+                                        name: string;
+                                        portrait?: ({
+                                            crop: {
+                                                size: number;
+                                                x: number;
+                                                y: number;
+                                            } & {
+                                                [key: string]: unknown;
+                                            };
+                                            file: string;
+                                        } & {
+                                            [key: string]: unknown;
+                                        }) | null;
+                                        roles?: string[];
+                                        templates?: string[];
+                                    };
+                                    /** @enum {string} */
+                                    type: "character.create";
+                                } | {
+                                    id: string;
+                                    set?: {
+                                        body?: string;
+                                        color?: string | null;
+                                        extraFields?: string[];
+                                        name?: string;
+                                        portrait?: ({
+                                            crop: {
+                                                size: number;
+                                                x: number;
+                                                y: number;
+                                            } & {
+                                                [key: string]: unknown;
+                                            };
+                                            file: string;
+                                        } & {
+                                            [key: string]: unknown;
+                                        }) | null;
+                                        roles?: string[];
+                                        templates?: string[];
+                                    };
+                                    setFields?: {
+                                        [key: string]: unknown;
+                                    };
+                                    /** @enum {string} */
+                                    type: "character.update";
+                                    unsetFields?: string[];
+                                } | {
+                                    id: string;
+                                    /** @enum {string} */
+                                    type: "character.delete";
+                                } | {
+                                    field: {
+                                        calendar?: {
+                                            color: string | null;
+                                            show: boolean;
+                                            title: string;
+                                        } & {
+                                            [key: string]: unknown;
+                                        };
+                                        default: boolean;
+                                        key: string;
+                                        label: string;
+                                        options?: string[];
+                                        section?: string;
+                                        /** @enum {string} */
+                                        type: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                        unit?: string;
+                                    } & {
+                                        [key: string]: unknown;
+                                    };
+                                    /** @enum {string} */
+                                    type: "field.create";
+                                } | {
+                                    key: string;
+                                    set: {
+                                        default?: boolean;
+                                        label?: string;
+                                        options?: string[];
+                                        /** @enum {string} */
+                                        type?: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                        unit?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "field.update";
+                                } | {
+                                    index: number;
+                                    key: string;
+                                    /** @enum {string} */
+                                    type: "field.move";
+                                } | {
+                                    key: string;
+                                    /** @enum {string} */
+                                    type: "field.delete";
+                                } | {
+                                    key: string | null;
+                                    /** @enum {string} */
+                                    type: "fields.setSubtitle";
+                                } | {
+                                    template: {
+                                        fields?: string[];
+                                        id?: string;
+                                        name: string;
+                                        role?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "template.create";
+                                } | {
+                                    id: string;
+                                    set: {
+                                        fields?: string[];
+                                        name?: string;
+                                        role?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "template.update";
+                                } | {
+                                    id: string;
+                                    index: number;
+                                    /** @enum {string} */
+                                    type: "template.move";
+                                } | {
+                                    id: string;
+                                    /** @enum {string} */
+                                    type: "template.delete";
+                                } | {
+                                    files: {
+                                        data: unknown;
+                                        fileName: string | null;
+                                        ref: {
+                                            /** @enum {string} */
+                                            kind: "world";
+                                        } | {
+                                            /** @enum {string} */
+                                            kind: "fields" | "roles" | "relationshipTypes" | "templates";
+                                        } | {
+                                            id: string;
+                                            /** @enum {string} */
+                                            kind: "character" | "relationship" | "event" | "view" | "search";
+                                        };
+                                    }[];
+                                    /** @enum {string} */
+                                    type: "restore";
+                                })[];
+                                expect?: {
+                                    [key: string]: string | null;
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    w: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            fingerprints: {
+                                [key: string]: string | null;
+                            };
+                            inverse: {
+                                commands: ({
+                                    name: string;
+                                    /** @enum {string} */
+                                    type: "world.rename";
+                                } | {
+                                    character: {
+                                        body?: string;
+                                        color?: string | null;
+                                        extraFields?: string[];
+                                        fields?: {
+                                            [key: string]: unknown;
+                                        };
+                                        id?: string;
+                                        name: string;
+                                        portrait?: ({
+                                            crop: {
+                                                size: number;
+                                                x: number;
+                                                y: number;
+                                            } & {
+                                                [key: string]: unknown;
+                                            };
+                                            file: string;
+                                        } & {
+                                            [key: string]: unknown;
+                                        }) | null;
+                                        roles?: string[];
+                                        templates?: string[];
+                                    };
+                                    /** @enum {string} */
+                                    type: "character.create";
+                                } | {
+                                    id: string;
+                                    set?: {
+                                        body?: string;
+                                        color?: string | null;
+                                        extraFields?: string[];
+                                        name?: string;
+                                        portrait?: ({
+                                            crop: {
+                                                size: number;
+                                                x: number;
+                                                y: number;
+                                            } & {
+                                                [key: string]: unknown;
+                                            };
+                                            file: string;
+                                        } & {
+                                            [key: string]: unknown;
+                                        }) | null;
+                                        roles?: string[];
+                                        templates?: string[];
+                                    };
+                                    setFields?: {
+                                        [key: string]: unknown;
+                                    };
+                                    /** @enum {string} */
+                                    type: "character.update";
+                                    unsetFields?: string[];
+                                } | {
+                                    id: string;
+                                    /** @enum {string} */
+                                    type: "character.delete";
+                                } | {
+                                    field: {
+                                        calendar?: {
+                                            color: string | null;
+                                            show: boolean;
+                                            title: string;
+                                        } & {
+                                            [key: string]: unknown;
+                                        };
+                                        default: boolean;
+                                        key: string;
+                                        label: string;
+                                        options?: string[];
+                                        section?: string;
+                                        /** @enum {string} */
+                                        type: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                        unit?: string;
+                                    } & {
+                                        [key: string]: unknown;
+                                    };
+                                    /** @enum {string} */
+                                    type: "field.create";
+                                } | {
+                                    key: string;
+                                    set: {
+                                        default?: boolean;
+                                        label?: string;
+                                        options?: string[];
+                                        /** @enum {string} */
+                                        type?: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                        unit?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "field.update";
+                                } | {
+                                    index: number;
+                                    key: string;
+                                    /** @enum {string} */
+                                    type: "field.move";
+                                } | {
+                                    key: string;
+                                    /** @enum {string} */
+                                    type: "field.delete";
+                                } | {
+                                    key: string | null;
+                                    /** @enum {string} */
+                                    type: "fields.setSubtitle";
+                                } | {
+                                    template: {
+                                        fields?: string[];
+                                        id?: string;
+                                        name: string;
+                                        role?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "template.create";
+                                } | {
+                                    id: string;
+                                    set: {
+                                        fields?: string[];
+                                        name?: string;
+                                        role?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "template.update";
+                                } | {
+                                    id: string;
+                                    index: number;
+                                    /** @enum {string} */
+                                    type: "template.move";
+                                } | {
+                                    id: string;
+                                    /** @enum {string} */
+                                    type: "template.delete";
+                                } | {
+                                    files: {
+                                        data: unknown;
+                                        fileName: string | null;
+                                        ref: {
+                                            /** @enum {string} */
+                                            kind: "world";
+                                        } | {
+                                            /** @enum {string} */
+                                            kind: "fields" | "roles" | "relationshipTypes" | "templates";
+                                        } | {
+                                            id: string;
+                                            /** @enum {string} */
+                                            kind: "character" | "relationship" | "event" | "view" | "search";
+                                        };
+                                    }[];
+                                    /** @enum {string} */
+                                    type: "restore";
+                                })[];
+                                expect?: {
+                                    [key: string]: string | null;
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/worlds/{w}/commands": {
         parameters: {
             query?: never;
@@ -637,6 +1031,80 @@ export interface paths {
                             id: string;
                             /** @enum {string} */
                             type: "character.delete";
+                        } | {
+                            field: {
+                                calendar?: {
+                                    color: string | null;
+                                    show: boolean;
+                                    title: string;
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                default: boolean;
+                                key: string;
+                                label: string;
+                                options?: string[];
+                                section?: string;
+                                /** @enum {string} */
+                                type: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                unit?: string;
+                            } & {
+                                [key: string]: unknown;
+                            };
+                            /** @enum {string} */
+                            type: "field.create";
+                        } | {
+                            key: string;
+                            set: {
+                                default?: boolean;
+                                label?: string;
+                                options?: string[];
+                                /** @enum {string} */
+                                type?: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                unit?: string | null;
+                            };
+                            /** @enum {string} */
+                            type: "field.update";
+                        } | {
+                            index: number;
+                            key: string;
+                            /** @enum {string} */
+                            type: "field.move";
+                        } | {
+                            key: string;
+                            /** @enum {string} */
+                            type: "field.delete";
+                        } | {
+                            key: string | null;
+                            /** @enum {string} */
+                            type: "fields.setSubtitle";
+                        } | {
+                            template: {
+                                fields?: string[];
+                                id?: string;
+                                name: string;
+                                role?: string | null;
+                            };
+                            /** @enum {string} */
+                            type: "template.create";
+                        } | {
+                            id: string;
+                            set: {
+                                fields?: string[];
+                                name?: string;
+                                role?: string | null;
+                            };
+                            /** @enum {string} */
+                            type: "template.update";
+                        } | {
+                            id: string;
+                            index: number;
+                            /** @enum {string} */
+                            type: "template.move";
+                        } | {
+                            id: string;
+                            /** @enum {string} */
+                            type: "template.delete";
                         } | {
                             files: {
                                 data: unknown;
@@ -737,6 +1205,80 @@ export interface paths {
                                     id: string;
                                     /** @enum {string} */
                                     type: "character.delete";
+                                } | {
+                                    field: {
+                                        calendar?: {
+                                            color: string | null;
+                                            show: boolean;
+                                            title: string;
+                                        } & {
+                                            [key: string]: unknown;
+                                        };
+                                        default: boolean;
+                                        key: string;
+                                        label: string;
+                                        options?: string[];
+                                        section?: string;
+                                        /** @enum {string} */
+                                        type: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                        unit?: string;
+                                    } & {
+                                        [key: string]: unknown;
+                                    };
+                                    /** @enum {string} */
+                                    type: "field.create";
+                                } | {
+                                    key: string;
+                                    set: {
+                                        default?: boolean;
+                                        label?: string;
+                                        options?: string[];
+                                        /** @enum {string} */
+                                        type?: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                        unit?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "field.update";
+                                } | {
+                                    index: number;
+                                    key: string;
+                                    /** @enum {string} */
+                                    type: "field.move";
+                                } | {
+                                    key: string;
+                                    /** @enum {string} */
+                                    type: "field.delete";
+                                } | {
+                                    key: string | null;
+                                    /** @enum {string} */
+                                    type: "fields.setSubtitle";
+                                } | {
+                                    template: {
+                                        fields?: string[];
+                                        id?: string;
+                                        name: string;
+                                        role?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "template.create";
+                                } | {
+                                    id: string;
+                                    set: {
+                                        fields?: string[];
+                                        name?: string;
+                                        role?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "template.update";
+                                } | {
+                                    id: string;
+                                    index: number;
+                                    /** @enum {string} */
+                                    type: "template.move";
+                                } | {
+                                    id: string;
+                                    /** @enum {string} */
+                                    type: "template.delete";
                                 } | {
                                     files: {
                                         data: unknown;
@@ -923,6 +1465,80 @@ export interface paths {
                                     /** @enum {string} */
                                     type: "character.delete";
                                 } | {
+                                    field: {
+                                        calendar?: {
+                                            color: string | null;
+                                            show: boolean;
+                                            title: string;
+                                        } & {
+                                            [key: string]: unknown;
+                                        };
+                                        default: boolean;
+                                        key: string;
+                                        label: string;
+                                        options?: string[];
+                                        section?: string;
+                                        /** @enum {string} */
+                                        type: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                        unit?: string;
+                                    } & {
+                                        [key: string]: unknown;
+                                    };
+                                    /** @enum {string} */
+                                    type: "field.create";
+                                } | {
+                                    key: string;
+                                    set: {
+                                        default?: boolean;
+                                        label?: string;
+                                        options?: string[];
+                                        /** @enum {string} */
+                                        type?: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                        unit?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "field.update";
+                                } | {
+                                    index: number;
+                                    key: string;
+                                    /** @enum {string} */
+                                    type: "field.move";
+                                } | {
+                                    key: string;
+                                    /** @enum {string} */
+                                    type: "field.delete";
+                                } | {
+                                    key: string | null;
+                                    /** @enum {string} */
+                                    type: "fields.setSubtitle";
+                                } | {
+                                    template: {
+                                        fields?: string[];
+                                        id?: string;
+                                        name: string;
+                                        role?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "template.create";
+                                } | {
+                                    id: string;
+                                    set: {
+                                        fields?: string[];
+                                        name?: string;
+                                        role?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "template.update";
+                                } | {
+                                    id: string;
+                                    index: number;
+                                    /** @enum {string} */
+                                    type: "template.move";
+                                } | {
+                                    id: string;
+                                    /** @enum {string} */
+                                    type: "template.delete";
+                                } | {
                                     files: {
                                         data: unknown;
                                         fileName: string | null;
@@ -1106,6 +1722,80 @@ export interface paths {
                                     id: string;
                                     /** @enum {string} */
                                     type: "character.delete";
+                                } | {
+                                    field: {
+                                        calendar?: {
+                                            color: string | null;
+                                            show: boolean;
+                                            title: string;
+                                        } & {
+                                            [key: string]: unknown;
+                                        };
+                                        default: boolean;
+                                        key: string;
+                                        label: string;
+                                        options?: string[];
+                                        section?: string;
+                                        /** @enum {string} */
+                                        type: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                        unit?: string;
+                                    } & {
+                                        [key: string]: unknown;
+                                    };
+                                    /** @enum {string} */
+                                    type: "field.create";
+                                } | {
+                                    key: string;
+                                    set: {
+                                        default?: boolean;
+                                        label?: string;
+                                        options?: string[];
+                                        /** @enum {string} */
+                                        type?: "text" | "number" | "date" | "colour" | "select" | "multiselect" | "character" | "measurement";
+                                        unit?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "field.update";
+                                } | {
+                                    index: number;
+                                    key: string;
+                                    /** @enum {string} */
+                                    type: "field.move";
+                                } | {
+                                    key: string;
+                                    /** @enum {string} */
+                                    type: "field.delete";
+                                } | {
+                                    key: string | null;
+                                    /** @enum {string} */
+                                    type: "fields.setSubtitle";
+                                } | {
+                                    template: {
+                                        fields?: string[];
+                                        id?: string;
+                                        name: string;
+                                        role?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "template.create";
+                                } | {
+                                    id: string;
+                                    set: {
+                                        fields?: string[];
+                                        name?: string;
+                                        role?: string | null;
+                                    };
+                                    /** @enum {string} */
+                                    type: "template.update";
+                                } | {
+                                    id: string;
+                                    index: number;
+                                    /** @enum {string} */
+                                    type: "template.move";
+                                } | {
+                                    id: string;
+                                    /** @enum {string} */
+                                    type: "template.delete";
                                 } | {
                                     files: {
                                         data: unknown;

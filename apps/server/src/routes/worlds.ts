@@ -1,4 +1,5 @@
 import { extname } from "node:path";
+import type { FastifyError, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { StorageError, can } from "@dramatis-personae/core";
 import {
@@ -8,13 +9,15 @@ import {
   FileNameSchema,
   FixRequestSchema,
   IdSchema,
+  PORTRAIT_UPLOAD_LIMIT,
+  PortraitCropSchema,
   ProblemSchema,
   WorldSnapshotSchema,
   WorldSummarySchema,
   refKey,
 } from "@dramatis-personae/schema";
 import type { App, ServerContext } from "../context.ts";
-import { ApiError } from "../http/errors.ts";
+import { ApiError, handleError, portraitUploadError } from "../http/errors.ts";
 import { requireRead } from "../http/permissions.ts";
 import type { WorldSessions } from "../worlds/world-sessions.ts";
 
@@ -132,6 +135,50 @@ export function worldRoutes(app: App, ctx: ServerContext, sessions: WorldSession
     },
   );
 
+  // Portraits arrive as raw image bytes; the crop travels in the query string.
+  app.addContentTypeParser(
+    "application/octet-stream",
+    { parseAs: "buffer", bodyLimit: PORTRAIT_UPLOAD_LIMIT },
+    (_request, body, done) => done(null, body),
+  );
+  const portraitRoute = {
+    errorHandler: (error: FastifyError, request: FastifyRequest, reply: FastifyReply) =>
+      handleError(portraitUploadError(error), request, reply),
+    bodyLimit: PORTRAIT_UPLOAD_LIMIT,
+  };
+
+  app.put(
+    "/api/worlds/:w/characters/:id/portrait",
+    {
+      ...portraitRoute,
+      schema: {
+        params: World.extend({ id: IdSchema }),
+        querystring: PortraitCropSchema,
+        response: { 200: CommandResultSchema },
+      },
+    },
+    async (request) =>
+      (await sessions.get(request.params.w)).setPortrait(
+        request.user,
+        request.params.id,
+        request.body as Buffer,
+        request.query,
+      ),
+  );
+
+  app.delete(
+    "/api/worlds/:w/characters/:id/portrait",
+    {
+      ...portraitRoute,
+      schema: {
+        params: World.extend({ id: IdSchema }),
+        response: { 200: CommandResultSchema },
+      },
+    },
+    async (request) =>
+      (await sessions.get(request.params.w)).removePortrait(request.user, request.params.id),
+  );
+
   app.get(
     "/api/worlds/:w/assets/portraits/:file",
     { schema: { params: World.extend({ file: PortraitFileSchema }) } },
@@ -140,7 +187,9 @@ export function worldRoutes(app: App, ctx: ServerContext, sessions: WorldSession
       const session = await sessions.get(request.params.w);
       let bytes: Uint8Array | null;
       try {
-        bytes = await session.readAsset(request.params.file);
+        bytes = request.params.file.endsWith(".thumb.webp")
+          ? await session.thumbnail(request.params.file)
+          : await session.readAsset(request.params.file);
       } catch (error) {
         if (error instanceof StorageError && error.code === "io") {
           throw new ApiError(400, "invalid", "Not a portrait file name");

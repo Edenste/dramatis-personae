@@ -16,15 +16,18 @@ import {
 import {
   parseRefKey,
   refKey,
+  slugify,
   type CommandBatch,
   type CommandResult,
+  type Crop,
   type FileRef,
   type FixRequest,
   type ServerMessage,
   type WorldSnapshot,
   type WorldSummary,
 } from "@dramatis-personae/schema";
-import { ApiError } from "../http/errors.ts";
+import { ApiError, UNSUPPORTED_IMAGE } from "../http/errors.ts";
+import { cropFits, inspectImage, makeThumbnail } from "../portraits/images.ts";
 import { SerialQueue } from "./serial-queue.ts";
 
 /** A pushed message before the session gives it a sequence number. */
@@ -43,6 +46,9 @@ export interface SessionOptions extends OpenWorldOptions {
 
 const UNSAVED_MESSAGE =
   "Couldn't save your change. It's kept in the app; retry when the file is free.";
+
+const THUMBNAIL_SUFFIX = ".thumb.webp";
+const PORTRAITS = "assets/portraits";
 
 const COMMAND_STATUS: Record<CommandError["code"], number> = {
   forbidden: 403,
@@ -89,6 +95,7 @@ export class WorldSession {
   /** Counts pushed messages; a snapshot reports the latest, so clients can drop older pushes. */
   private seq = 0;
   private stopWatching: () => void = () => undefined;
+  private warn: (message: string) => void = () => undefined;
 
   private constructor(
     private readonly storage: WorldStorage,
@@ -108,6 +115,7 @@ export class WorldSession {
     const { model, readOnly } = await openWorld(storage, worldId, options);
     const session = new WorldSession(storage, worldId, model, readOnly);
     const warn = options.onWarning ?? (() => undefined);
+    session.warn = warn;
     // The world counts as open once outside edits are being seen. If watching
     // fails or stalls, it opens anyway: the app works, outside edits may be missed.
     await new Promise<void>((resolve) => {
@@ -233,6 +241,103 @@ export class WorldSession {
     return this.storage.readAsset(this.worldId, fileName);
   }
 
+  /**
+   * Gives a character a portrait from an uploaded image. The file is
+   * `<name>-<id>.<ext>`, overwriting any earlier one, so this can't be undone.
+   */
+  setPortrait(user: User, id: string, bytes: Uint8Array, crop: Crop): Promise<CommandResult> {
+    return this.queue.run(async () => {
+      const character = this.portraitCharacter(user, id);
+      const image = await inspectImage(bytes);
+      if (!image) throw new ApiError(415, "unsupported-image", UNSUPPORTED_IMAGE);
+      if (!cropFits(crop, image.width, image.height)) {
+        throw new ApiError(400, "invalid", "The crop must fit inside the image.");
+      }
+      const file = `${slugify(character.name)}-${id}${image.ext}`;
+      const old = character.portrait?.file;
+      const before: DocumentChange[] = [
+        { op: "putAsset", fileName: file, bytes },
+        { op: "deleteAsset", fileName: file + THUMBNAIL_SUFFIX },
+      ];
+      if (old !== undefined && old !== file) {
+        before.push(
+          { op: "deleteAsset", fileName: old },
+          { op: "deleteAsset", fileName: old + THUMBNAIL_SUFFIX },
+        );
+      }
+      const batch: CommandBatch = {
+        commands: [{ type: "character.update", id, set: { portrait: { file, crop } } }],
+      };
+      return this.applyNow(batch, user, { before, undoable: false });
+    });
+  }
+
+  /** Removes a character's portrait, its image and thumbnail. Can't be undone. */
+  removePortrait(user: User, id: string): Promise<CommandResult> {
+    return this.queue.run(async () => {
+      const file = this.portraitCharacter(user, id).portrait?.file;
+      if (file === undefined)
+        throw new ApiError(404, "not-found", "This character has no portrait");
+      const before: DocumentChange[] = [
+        { op: "deleteAsset", fileName: file },
+        { op: "deleteAsset", fileName: file + THUMBNAIL_SUFFIX },
+      ];
+      const batch: CommandBatch = {
+        commands: [{ type: "character.update", id, set: { portrait: null } }],
+      };
+      return this.applyNow(batch, user, { before, undoable: false });
+    });
+  }
+
+  /**
+   * A portrait's 256 × 256 thumbnail, made from the original and the crop when
+   * it is missing or older than the character's file. Null when there is
+   * nothing to make it from.
+   */
+  thumbnail(fileName: string): Promise<Uint8Array | null> {
+    if (!fileName.endsWith(THUMBNAIL_SUFFIX)) return Promise.resolve(null);
+    const original = fileName.slice(0, -THUMBNAIL_SUFFIX.length);
+    return this.queue.run(async () => {
+      const character = this.current.all("character").find((c) => c.portrait?.file === original);
+      if (!character?.portrait) return null;
+      const characterPath = this.current.path({ kind: "character", id: character.id });
+      const [thumbTime, characterTime] = await Promise.all([
+        this.storage.modifiedAt(this.worldId, `${PORTRAITS}/${fileName}`),
+        characterPath === undefined
+          ? Promise.resolve(null)
+          : this.storage.modifiedAt(this.worldId, characterPath),
+      ]);
+      if (thumbTime !== null && (characterTime === null || thumbTime >= characterTime)) {
+        const kept = await this.storage.readAsset(this.worldId, fileName);
+        if (kept) return kept;
+      }
+      const source = await this.storage.readAsset(this.worldId, original);
+      if (!source) return null;
+      try {
+        const made = await makeThumbnail(source, character.portrait.crop);
+        await this.storage.write(this.worldId, [{ op: "putAsset", fileName, bytes: made }]);
+        return made;
+      } catch (error) {
+        this.warn(
+          `World ${this.worldId}: couldn't make a thumbnail for ${original}: ${String(error)}`,
+        );
+        return null;
+      }
+    });
+  }
+
+  /** The character a portrait change is for, once the user and world allow editing. */
+  private portraitCharacter(user: User, id: string) {
+    if (!can(user, "edit")) {
+      throw new ApiError(403, "forbidden", "You don't have edit access to this world");
+    }
+    if (this.readOnly) throw new ApiError(403, "read-only", "This world is open read-only");
+    this.refuseWhilePending();
+    const character = this.current.get("character", id);
+    if (!character) throw new ApiError(404, "not-found", "No such character");
+    return character;
+  }
+
   subscribe(listener: (message: ServerMessage) => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
@@ -249,7 +354,15 @@ export class WorldSession {
     }
   }
 
-  private async applyNow(batch: CommandBatch, user: User): Promise<CommandResult> {
+  /**
+   * Applies a batch and writes it. `before` changes (asset writes) go first;
+   * `undoable: false` answers with no inverse, for changes that can't be undone.
+   */
+  private async applyNow(
+    batch: CommandBatch,
+    user: User,
+    extra: { before?: DocumentChange[]; undoable?: boolean } = {},
+  ): Promise<CommandResult> {
     this.refuseWhilePending();
     const result = applyBatch(this.current, batch, user, { readOnly: this.readOnly });
     if (!result.ok) {
@@ -267,14 +380,22 @@ export class WorldSession {
     const fingerprints = Object.fromEntries(
       refs.map((ref) => [refKey(ref), result.model.fingerprint(ref) ?? null]),
     );
-    const outcome: CommandResult = { inverse: result.inverse, fingerprints };
+    const outcome: CommandResult = {
+      inverse: extra.undoable === false ? { commands: [] } : result.inverse,
+      fingerprints,
+    };
+    const changes = [...(extra.before ?? []), ...result.changes];
     const before = this.current;
-    this.current = result.model;
+    // The model's list of portrait files must follow the app's own writes, or a portrait it just saved is reported missing.
+    this.current = result.model.withAssets({
+      add: changes.flatMap((c) => (c.op === "putAsset" ? [c.fileName] : [])),
+      remove: changes.flatMap((c) => (c.op === "deleteAsset" ? [c.fileName] : [])),
+    });
     try {
-      await this.writeChanges(result.changes, before);
+      await this.writeChanges(changes, before);
     } catch {
       // The change stays in memory, unsaved, until it is retried or discarded (spec §13).
-      this.pending = { changes: result.changes, result: outcome };
+      this.pending = { changes, result: outcome };
       this.changed(before, refs);
       this.emit({
         type: "save-state",

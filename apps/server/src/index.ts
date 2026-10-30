@@ -5,6 +5,14 @@ export { checkWritable, readOptions, writeOptions } from "./config/options.ts";
 export { createLogger } from "./http/logger.ts";
 export { parseArgs, USAGE, type CliArgs } from "./cli.ts";
 export {
+  THUMBNAIL_SIZE,
+  cropFits,
+  inspectImage,
+  makeThumbnail,
+  type Crop,
+  type PortraitExt,
+} from "./portraits/images.ts";
+export {
   defaultOpenPath,
   openWith,
   startServer,
