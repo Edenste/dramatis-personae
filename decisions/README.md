@@ -19,6 +19,7 @@ Each record captures one decision: the context at the time, the options consider
 | [0009](0009-tooling.md) | Development tooling: TypeScript, Vite, Vitest, Playwright, ESLint, Prettier and GitHub Actions | Accepted | 2026-10-28 |
 | [0010](0010-world-data-model.md) | World data model: IDs, file names and document shapes | Accepted | 2026-10-28 |
 | [0011](0011-edits-as-commands.md) | Edits as commands, with autosave, client-side undo and live updates | Accepted | 2026-10-28 |
+| [0012](0012-design-language.md) | A Mac-native design language: tabs in the title bar, floating cards and fade-and-settle motion | Accepted | 2026-10-30 |
 
 ## Adding a record
 
