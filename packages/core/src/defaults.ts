@@ -92,7 +92,11 @@ export function newWorldFiles(name: string, generateId = defaultGenerateId): New
       schemaVersion: CURRENT_SCHEMA_VERSION,
       mainView: mainView.id,
     },
-    fields: { $schema: schemaRefFor("fields"), fields: DEFAULT_FIELDS.map((f) => ({ ...f })) },
+    fields: {
+      $schema: schemaRefFor("fields"),
+      subtitle: null,
+      fields: DEFAULT_FIELDS.map((f) => ({ ...f })),
+    },
     roles: { $schema: schemaRefFor("roles"), roles: [] },
     relationshipTypes: {
       $schema: schemaRefFor("relationshipTypes"),

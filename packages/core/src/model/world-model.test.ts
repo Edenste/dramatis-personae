@@ -132,3 +132,23 @@ describe("files", () => {
     expect(paths).toEqual([...paths].sort());
   });
 });
+
+describe("portrait files", () => {
+  it("tracks files added and removed, without changing the model it came from", async () => {
+    const model = await loadCamelotModel();
+    const arthur = model.get("character", C.Arthur!)!.portrait!.file;
+    const next = model.withAssets({ add: ["new.png"], remove: [arthur] });
+    expect(next.hasAsset("new.png")).toBe(true);
+    expect(next.hasAsset(arthur)).toBe(false);
+    expect(model.hasAsset("new.png")).toBe(false);
+    expect(model.hasAsset(arthur)).toBe(true);
+  });
+
+  it("reports a portrait that has lost its file, and stops once the file is back", async () => {
+    const model = await loadCamelotModel();
+    const arthur = model.get("character", C.Arthur!)!.portrait!.file;
+    const lost = model.withAssets({ remove: [arthur] });
+    expect(lost.problems().map((p) => p.code)).toEqual(["missing-portrait"]);
+    expect(lost.withAssets({ add: [arthur] }).problems()).toEqual([]);
+  });
+});

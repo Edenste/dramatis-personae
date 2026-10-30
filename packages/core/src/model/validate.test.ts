@@ -49,6 +49,12 @@ describe("crossFileProblems", () => {
         `relationships/${m.fileName({ kind: "relationship", id: relationshipBetween(camelot, "Arthur", "Kay").id })}`,
     ],
     [
+      "a subtitle naming a field that isn't in the library",
+      (m) => editFile(m, { kind: "fields" }, (d) => void (d.subtitle = "nope")),
+      "dangling-reference",
+      () => "fields.json",
+    ],
+    [
       "an event listing an unknown character",
       (m) =>
         editFile(

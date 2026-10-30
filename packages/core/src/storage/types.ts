@@ -74,6 +74,11 @@ export interface WorldStorage {
   /** A portrait's bytes from assets/portraits/, or null if there is no such file. */
   readAsset(worldId: string, fileName: string): Promise<Uint8Array | null>;
   /**
+   * When a file last changed, in ms. `path` is relative to the world folder,
+   * with `/`. Null if there is no such file.
+   */
+  modifiedAt(worldId: string, path: string): Promise<number | null>;
+  /**
    * Gives the document at `path` (a copy whose id is taken) a fresh id, under a
    * file name with the new id. Not a command: the copy isn't in the model.
    */

@@ -11,6 +11,8 @@ import type { FileUpdate, WorldModel } from "../model/world-model.ts";
 import { fingerprint, serialize } from "../serialize.ts";
 import type { DocumentChange } from "../storage/types.ts";
 import { createCharacter, deleteCharacter, updateCharacter } from "./character.ts";
+import { createField, deleteField, moveField, setSubtitle, updateField } from "./fields.ts";
+import { createTemplate, deleteTemplate, moveTemplate, updateTemplate } from "./templates.ts";
 import { can, type User } from "./permissions.ts";
 import { restoreFiles } from "./restore.ts";
 import type { CommandError, HandlerContext, HandlerResult } from "./types.ts";
@@ -41,6 +43,24 @@ function handle(ctx: HandlerContext, command: Command): HandlerResult {
       return deleteCharacter(ctx, command.id);
     case "restore":
       return restoreFiles(ctx, command.files);
+    case "field.create":
+      return createField(ctx, command);
+    case "field.update":
+      return updateField(ctx, command);
+    case "field.move":
+      return moveField(ctx, command.key, command.index);
+    case "field.delete":
+      return deleteField(ctx, command.key);
+    case "fields.setSubtitle":
+      return setSubtitle(ctx, command.key);
+    case "template.create":
+      return createTemplate(ctx, command);
+    case "template.update":
+      return updateTemplate(ctx, command);
+    case "template.move":
+      return moveTemplate(ctx, command.id, command.index);
+    case "template.delete":
+      return deleteTemplate(ctx, command.id);
   }
 }
 

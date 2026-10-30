@@ -30,7 +30,7 @@ export type FileUpdate =
   | { ref: FileRef; removed: true };
 
 const EMPTY_LIBRARIES: { [K in LibraryKind]: FileData<K> } = {
-  fields: { fields: [] },
+  fields: { subtitle: null, fields: [] },
   roles: { roles: [] },
   relationshipTypes: { types: [] },
   templates: { templates: [] },
@@ -158,6 +158,14 @@ export class WorldModel {
       }
     }
     return new WorldModel(this.worldId, entries, this.assets, this.loadProblems, this.invalid);
+  }
+
+  /** A model whose portrait files are these, after some were written or deleted by the app. */
+  withAssets(changes: { add?: string[]; remove?: string[] }): WorldModel {
+    const assets = new Set(this.assets);
+    for (const name of changes.remove ?? []) assets.delete(name);
+    for (const name of changes.add ?? []) assets.add(name);
+    return new WorldModel(this.worldId, this.entries, assets, this.loadProblems, this.invalid);
   }
 
   withInvalid(path: string, problem: Problem): WorldModel {

@@ -147,6 +147,15 @@ export function crossFileProblems(model: WorldModel): Problem[] {
     }
   }
 
+  const subtitle = model.library("fields").subtitle;
+  if (subtitle !== null && !fields.has(subtitle)) {
+    report(
+      { kind: "fields" },
+      "dangling-reference",
+      `Subtitle field ${subtitle} isn't in the field library`,
+    );
+  }
+
   for (const template of templates) {
     if (template.role !== null && !roleIds.has(template.role)) {
       report({ kind: "templates" }, "dangling-reference", `Role ${template.role} doesn't exist`);

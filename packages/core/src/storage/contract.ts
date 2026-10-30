@@ -108,6 +108,29 @@ export function defineStorageContract(name: string, make: () => Promise<Contract
       });
     });
 
+    it("tells when a file last changed, or null when it isn't there", async () => {
+      const worldId = await subject.storage.createWorld({ name: "Logres" });
+      await subject.storage.loadWorld(worldId);
+      const path = "assets/portraits/kay.png";
+      expect(await subject.storage.modifiedAt(worldId, path)).toBeNull();
+      expect(typeof (await subject.storage.modifiedAt(worldId, "world.json"))).toBe("number");
+
+      const put = () =>
+        subject.storage.write(worldId, [
+          { op: "putAsset", fileName: "kay.png", bytes: new Uint8Array([1]) },
+        ]);
+      await put();
+      const first = await subject.storage.modifiedAt(worldId, path);
+      expect(typeof first).toBe("number");
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      await put();
+      expect(await subject.storage.modifiedAt(worldId, path)).toBeGreaterThan(first!);
+
+      await expect(subject.storage.modifiedAt(worldId, "../outside.json")).rejects.toMatchObject({
+        code: "io",
+      });
+    });
+
     it("gives a copied document a new id", async () => {
       const worldId = await subject.storage.createWorld({ name: "Logres" });
       await subject.storage.loadWorld(worldId);

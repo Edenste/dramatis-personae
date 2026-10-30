@@ -377,6 +377,18 @@ export class JsonFileStorage implements WorldStorage {
     return (await this.read(inside(root, assetPath(bareFileName(fileName))))) ?? null;
   }
 
+  async modifiedAt(worldId: string, path: string): Promise<number | null> {
+    const root =
+      this.loaded.get(worldId)?.root ?? join(this.worldsDir, await this.folderFor(worldId));
+    const absolute = inside(root, path);
+    try {
+      return (await this.fs.stat(absolute)).mtimeMs;
+    } catch (error) {
+      if (errorCode(error) === "ENOENT") return null;
+      throw error;
+    }
+  }
+
   assignNewId(worldId: string, path: string): Promise<StoredFile> {
     const state = this.loaded.get(worldId);
     if (!state) {

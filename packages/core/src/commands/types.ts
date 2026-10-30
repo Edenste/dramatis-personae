@@ -1,4 +1,11 @@
-import { schemaRefFor, type FileKind, type FileRef } from "@dramatis-personae/schema";
+import {
+  LIBRARY_FILES,
+  documentFileName,
+  schemaRefFor,
+  type FileKind,
+  type FileRef,
+  type LibraryKind,
+} from "@dramatis-personae/schema";
 import type { WorldModel } from "../model/world-model.ts";
 
 export interface CommandError {
@@ -33,6 +40,28 @@ export function invalid(message: string, path?: string): HandlerResult {
 
 export function notFound(message: string, path?: string): HandlerResult {
   return { ok: false, error: { code: "not-found", message, ...(path ? { path } : {}) } };
+}
+
+/** A write of one library file, under its fixed name. */
+export function libraryWrite(kind: LibraryKind, data: object): Write {
+  return {
+    ref: { kind },
+    fileName: LIBRARY_FILES[kind],
+    data: withSchema(kind, data as Record<string, unknown>),
+  };
+}
+
+/** A write of a character, keeping its current file name. */
+export function characterWrite<T extends { id: string; name: string }>(
+  ctx: HandlerContext,
+  character: T,
+): Write {
+  const ref: FileRef = { kind: "character", id: character.id };
+  return {
+    ref,
+    fileName: ctx.model.fileName(ref) ?? documentFileName(character.name, character.id),
+    data: withSchema("character", character),
+  };
 }
 
 /** `data` with its `$schema` pointing at the world schema, listed first. */

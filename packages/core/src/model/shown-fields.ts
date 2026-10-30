@@ -1,3 +1,4 @@
+import { shownFields } from "@dramatis-personae/schema";
 import type { WorldModel } from "./world-model.ts";
 
 /**
@@ -7,13 +8,7 @@ import type { WorldModel } from "./world-model.ts";
 export function shownFieldKeys(model: WorldModel, characterId: string): string[] {
   const character = model.get("character", characterId);
   if (!character) return [];
-  const shown = new Set(character.extraFields);
-  const templates = model.library("templates").templates;
-  for (const id of character.templates) {
-    for (const key of templates.find((t) => t.id === id)?.fields ?? []) shown.add(key);
-  }
-  return model
-    .library("fields")
-    .fields.filter((field) => field.default || shown.has(field.key))
-    .map((field) => field.key);
+  return shownFields(character, model.library("fields"), model.library("templates")).map(
+    (shown) => shown.field.key,
+  );
 }
