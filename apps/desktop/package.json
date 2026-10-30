@@ -7,19 +7,24 @@
   "description": "Character hub and relationship mapping for writers, worldbuilders and fans",
   "main": "dist/main.cjs",
   "scripts": {
-    "build": "node build.mjs",
-    "start": "node build.mjs && electron-forge start",
-    "package": "node build.mjs && electron-forge package",
-    "typecheck": "tsc --noEmit"
+    "build": "pnpm --filter @dramatis-personae/web build && node build.mjs",
+    "start": "pnpm build && electron-forge start",
+    "package": "pnpm build && electron-forge package",
+    "make": "pnpm build && electron-forge make",
+    "typecheck": "tsc --noEmit",
+    "e2e": "playwright test"
   },
   "dependencies": {
-    "@dramatis-personae/server": "workspace:*"
+    "@dramatis-personae/server": "workspace:*",
+    "electron-squirrel-startup": "^1.0.1"
   },
   "devDependencies": {
+    "@dramatis-personae/samples": "workspace:*",
     "@electron-forge/cli": "^8.0.1",
     "@electron-forge/maker-dmg": "^8.0.1",
     "@electron-forge/maker-squirrel": "^8.0.1",
     "@electron-forge/maker-zip": "^8.0.1",
+    "@playwright/test": "^1.64.1",
     "electron": "^45.1.0",
     "esbuild": "^0.28.2",
     "vitest": "^5.0.5"

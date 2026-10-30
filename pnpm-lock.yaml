@@ -62,7 +62,13 @@ importers:
       '@dramatis-personae/server':
         specifier: workspace:*
         version: link:../server
+      electron-squirrel-startup:
+        specifier: ^1.0.1
+        version: 1.0.1
     devDependencies:
+      '@dramatis-personae/samples':
+        specifier: workspace:*
+        version: link:../../samples
       '@electron-forge/cli':
         specifier: ^8.0.1
         version: 8.0.1
@@ -75,6 +81,9 @@ importers:
       '@electron-forge/maker-zip':
         specifier: ^8.0.1
         version: 8.0.1
+      '@playwright/test':
+        specifier: ^1.64.1
+        version: 1.64.1
       electron:
         specifier: ^45.1.0
         version: 45.1.0
@@ -749,6 +758,11 @@ packages:
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
 
+  '@playwright/test@1.64.1':
+    resolution: {integrity: sha512-IaYGml/nSOiZWROfPtuIL7neuu9qDOZ3TNvNljUIrhDMxiGTgPjzj/g9p9RxpS2tSepPDRY+UwAaEeiKtUvIAg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   '@redocly/ajv@8.11.2':
     resolution: {integrity: sha512-io1JpnwtIcvojV7QKDUSIuMN/ikdOUd1ReEnUnMKGfDVridQZ31J0MmIuqwuRjWDZfmvr+Q0MqCcfHM2gTivOg==}
 
@@ -1371,6 +1385,14 @@ packages:
     resolution: {integrity: sha512-JQUCCK+/CAGbGGx618PlFZMXH81Jtj7t73CHv9dd/zVWvxgGT2zLFRjnKb+Ng46GIwcy+f7f88qd4duqllK+WQ==}
     engines: {node: ^22.14.0 || >=24.0.0}
 
+  debug@2.6.9:
+    resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
     engines: {node: '>=6.0'}
@@ -1418,6 +1440,9 @@ packages:
     resolution: {integrity: sha512-qOa1aAQdX57C+vzhDk3549dd/PRlNL4F8y736MTD1a43qptD+PvHY97Bo9gSf+OZ8iUWE7BrYSpk/FgLUe40EA==}
     engines: {node: '>= 16'}
     hasBin: true
+
+  electron-squirrel-startup@1.0.1:
+    resolution: {integrity: sha512-sTfFIHGku+7PsHLJ7v0dRcZNkALrV+YEozINTW8X1nM//e5O3L+rfYuvSW00lmGHnYmUjARZulD8F2V8ISI9RA==}
 
   electron-winstaller@5.4.4:
     resolution: {integrity: sha512-j9ETcBGJaXxAY/b6UBpR7LZfjdU4BAO+yvr4ifqHEdyuc3UNCy91PDGkWKY5UQ4coHNYfnwFggrqD6QPeFGAlg==}
@@ -2094,6 +2119,9 @@ packages:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
     engines: {node: '>=4'}
 
+  ms@2.0.0:
+    resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
+
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
@@ -2247,6 +2275,16 @@ packages:
 
   pino@10.4.0:
     resolution: {integrity: sha512-bk1ZMTwG/Vymx+zPoa28MhNzucFvXJWp3csrSuxuHPSMeUettaCoQ5Jvg07mtC4JGNpcfTwz41oVCnNgBK9+vA==}
+    hasBin: true
+
+  playwright-core@1.64.1:
+    resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.64.1:
+    resolution: {integrity: sha512-HCrVhHr5QQuwYoswEUGTb7gGp522yflbv/ST8nF4sFWGuLjQCt17Q/EubpGGSNKYn1tsTCPZxqHhHCfVURu7UA==}
+    engines: {node: '>=20'}
     hasBin: true
 
   plist@3.1.1:
@@ -3495,6 +3533,10 @@ snapshots:
 
   '@pinojs/redact@0.4.0': {}
 
+  '@playwright/test@1.64.1':
+    dependencies:
+      playwright: 1.64.1
+
   '@redocly/ajv@8.11.2':
     dependencies:
       fast-deep-equal: 3.1.3
@@ -4034,6 +4076,10 @@ snapshots:
     transitivePeerDependencies:
       - '@noble/hashes'
 
+  debug@2.6.9:
+    dependencies:
+      ms: 2.0.0
+
   debug@4.4.3(supports-color@10.2.2):
     dependencies:
       ms: 2.1.3
@@ -4080,6 +4126,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
     optional: true
+
+  electron-squirrel-startup@1.0.1:
+    dependencies:
+      debug: 2.6.9
+    transitivePeerDependencies:
+      - supports-color
 
   electron-winstaller@5.4.4:
     dependencies:
@@ -4842,6 +4894,8 @@ snapshots:
 
   mri@1.2.0: {}
 
+  ms@2.0.0: {}
+
   ms@2.1.3: {}
 
   murmur-32@0.2.0:
@@ -5006,6 +5060,12 @@ snapshots:
       safe-stable-stringify: 2.5.0
       sonic-boom: 4.2.1
       thread-stream: 4.2.0
+
+  playwright-core@1.64.1: {}
+
+  playwright@1.64.1:
+    dependencies:
+      playwright-core: 1.64.1
 
   plist@3.1.1:
     dependencies:

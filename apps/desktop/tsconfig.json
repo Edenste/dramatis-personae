@@ -1,4 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src/**/*.ts"]
+  "compilerOptions": {
+    // DOM types are for the e2e callbacks that Playwright runs inside the page.
+    "lib": ["ES2023", "DOM"]
+  },
+  "include": ["src/**/*.ts", "e2e/**/*.ts", "playwright.config.ts", "vitest.config.ts"]
 }

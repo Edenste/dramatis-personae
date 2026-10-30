@@ -5,8 +5,11 @@
  */
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { BrowserWindow, app, dialog, session, shell } from "electron";
+import { BrowserWindow, app, dialog, nativeTheme, session, shell } from "electron";
+import squirrelStartup from "electron-squirrel-startup";
 import { startServer, type RunningServer } from "@dramatis-personae/server";
+import { createDesktopHooks, themeWindow } from "./hooks.ts";
+import { shutDown } from "./shutdown.ts";
 import { mainWindowOptions, revealWindow } from "./window-options.ts";
 import { externalUrlToOpen, isAppUrl } from "./window-security.ts";
 
@@ -14,7 +17,9 @@ let server: RunningServer | undefined;
 let window: BrowserWindow | undefined;
 
 function createWindow(running: RunningServer): BrowserWindow {
-  const win = new BrowserWindow(mainWindowOptions());
+  const win = new BrowserWindow(
+    mainWindowOptions({ platform: process.platform, dark: nativeTheme.shouldUseDarkColors }),
+  );
   win.once("ready-to-show", () => win.show());
   win.on("closed", () => {
     if (window === win) window = undefined;
@@ -50,11 +55,15 @@ async function launch(): Promise<void> {
       if (error) throw new Error(error);
     },
     version: app.getVersion(),
+    desktop: createDesktopHooks(() => window),
   });
+  nativeTheme.themeSource = server.options.theme;
   window = createWindow(server);
+  themeWindow(window);
 }
 
-if (!app.requestSingleInstanceLock()) {
+// Squirrel runs the app with install, update and uninstall flags; handle them and leave.
+if (squirrelStartup || !app.requestSingleInstanceLock()) {
   app.quit();
 } else {
   // A second launch, or a click on the macOS Dock icon, shows the window,
@@ -76,15 +85,20 @@ if (!app.requestSingleInstanceLock()) {
       app.quit();
     });
 
+  // Quitting closes the windows before the server, so their last save still arrives.
+  let closing = false;
   app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") app.quit();
+    if (!closing && process.platform !== "darwin") app.quit();
   });
 
-  let closing = false;
   app.on("before-quit", (event) => {
     if (closing || !server) return;
     closing = true;
     event.preventDefault();
-    void server.close().finally(() => app.quit());
+    const running = server;
+    void shutDown({
+      windows: BrowserWindow.getAllWindows(),
+      closeServer: () => running.close(),
+    }).finally(() => app.quit());
   });
 }

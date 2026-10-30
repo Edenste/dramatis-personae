@@ -14,7 +14,8 @@
     "dev": "tsx scripts/dev.ts",
     "test": "vitest run",
     "check:boundaries": "node --experimental-strip-types --no-warnings scripts/check-boundaries.ts",
-    "generate:api": "pnpm --filter @dramatis-personae/server openapi && pnpm --filter @dramatis-personae/api-client generate"
+    "generate:api": "pnpm --filter @dramatis-personae/server openapi && pnpm --filter @dramatis-personae/api-client generate",
+    "test:e2e": "pnpm --filter @dramatis-personae/desktop build && pnpm --filter @dramatis-personae/desktop e2e"
   },
   "devDependencies": {
     "@dramatis-personae/server": "workspace:*",

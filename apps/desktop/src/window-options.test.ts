@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { mainWindowOptions, revealWindow, type RevealableWindow } from "./window-options.ts";
+import {
+  chromeColors,
+  mainWindowOptions,
+  revealWindow,
+  type RevealableWindow,
+} from "./window-options.ts";
 
 function fakeWindow(state: { destroyed?: boolean; minimized?: boolean }) {
   const calls: string[] = [];
@@ -34,13 +39,22 @@ describe("revealWindow", () => {
   });
 });
 
+const light = { platform: "win32", dark: false } as const;
+
+describe("chromeColors", () => {
+  it("matches the app's frame and secondary text in each theme", () => {
+    expect(chromeColors(false)).toEqual({ frame: "#E9E9EB", symbol: "#636366" });
+    expect(chromeColors(true)).toEqual({ frame: "#2C2C2E", symbol: "#98989D" });
+  });
+});
+
 describe("mainWindowOptions", () => {
   it("hides the menu bar until Alt is pressed", () => {
-    expect(mainWindowOptions().autoHideMenuBar).toBe(true);
+    expect(mainWindowOptions(light).autoHideMenuBar).toBe(true);
   });
 
   it("locks down the page", () => {
-    expect(mainWindowOptions().webPreferences).toEqual({
+    expect(mainWindowOptions(light).webPreferences).toEqual({
       contextIsolation: true,
       sandbox: true,
       nodeIntegration: false,
@@ -49,6 +63,24 @@ describe("mainWindowOptions", () => {
   });
 
   it("opens at 1280×800, shown only once ready", () => {
-    expect(mainWindowOptions()).toMatchObject({ width: 1280, height: 800, show: false });
+    expect(mainWindowOptions(light)).toMatchObject({ width: 1280, height: 800, show: false });
+  });
+
+  it("puts the tabs in the title bar and draws the Windows buttons in the app's colours", () => {
+    const options = mainWindowOptions(light);
+    expect(options.titleBarStyle).toBe("hidden");
+    expect(options.backgroundColor).toBe("#E9E9EB");
+    expect(options.titleBarOverlay).toEqual({
+      color: "#E9E9EB",
+      symbolColor: "#636366",
+      height: 38,
+    });
+  });
+
+  it("keeps the macOS buttons centred in the bar, with no overlay", () => {
+    const options = mainWindowOptions({ platform: "darwin", dark: true });
+    expect(options.trafficLightPosition).toEqual({ x: 14, y: 12 });
+    expect(options.titleBarOverlay).toBeUndefined();
+    expect(options.backgroundColor).toBe("#2C2C2E");
   });
 });
