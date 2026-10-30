@@ -10,26 +10,26 @@
     type Edge,
   } from "../lib/cards.ts";
   import { characterById, type WorldState } from "../lib/world-mirror.ts";
+  import type { ProfileActions } from "../profile/actions.ts";
   import Card from "./Card.svelte";
 
   let {
     cards,
     state,
-    readOnly,
+    actions,
     bounds,
     oncards,
     onopentab,
-    onrename,
   }: {
     /** Front-most last. */
     cards: CardState[];
     state: WorldState;
-    readOnly: boolean;
+    /** What the profiles in the cards can do; a link in a card opens another card. */
+    actions: ProfileActions;
     /** The page panel's size; zero until it has been measured. */
     bounds: Bounds;
     oncards: (cards: CardState[]) => void;
     onopentab: (character: string) => void;
-    onrename: (character: string, name: string) => void;
   } = $props();
 
   const measured = $derived(bounds.width > 0 && bounds.height > 0);
@@ -91,16 +91,16 @@
         onpointerdown={() => press(card.character)}
       >
         <Card
+          {state}
+          id={card.character}
           name={summary.name}
-          color={summary.color}
+          {actions}
           front={index === 0}
-          {readOnly}
           onclose={() => oncards(closeCard(cards, card.character))}
           onexpand={() => {
             oncards(closeCard(cards, card.character));
             onopentab(card.character);
           }}
-          onrename={(name: string) => onrename(card.character, name)}
           ondragstart={(event: PointerEvent) => {
             if ((event.target as Element).closest("button")) return;
             track(event, card.character, (start, dx, dy) =>

@@ -1,13 +1,15 @@
 import { ID_PATTERN } from "@dramatis-personae/schema";
 
 /** A tab's address within a world (spec §11): the part of the URL after /w/<world>/. */
-export type TabAddress = "graph" | "dashboard" | "problems" | `character/${string}`;
+export type TabAddress = "graph" | "dashboard" | "problems" | "fields" | `character/${string}`;
 
 /** Always open, in this order, and never closed. */
 export const PINNED: readonly TabAddress[] = ["graph", "dashboard"];
 
 export function isTabAddress(value: string): value is TabAddress {
-  if (value === "graph" || value === "dashboard" || value === "problems") return true;
+  if (value === "graph" || value === "dashboard" || value === "problems" || value === "fields") {
+    return true;
+  }
   const id = /^character\/(.+)$/.exec(value)?.[1];
   return id !== undefined && ID_PATTERN.test(id);
 }

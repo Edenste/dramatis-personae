@@ -1,53 +1,41 @@
 <script lang="ts">
   import { Check, Maximize2, Pencil, X } from "@lucide/svelte";
-  import { untrack } from "svelte";
   import { settleIn, settleOut } from "../lib/motion.ts";
+  import type { WorldState } from "../lib/world-mirror.ts";
+  import type { ProfileActions } from "../profile/actions.ts";
+  import Profile from "../profile/Profile.svelte";
+  import { profileView } from "../profile/profile-view.ts";
   import IconButton from "./IconButton.svelte";
 
+  // `state` is aliased: a variable named `state` would make `$state` read as a store.
   let {
+    state: world,
+    id,
     name,
-    color,
+    actions,
     front,
-    readOnly,
     onclose,
     onexpand,
-    onrename,
     ondragstart,
   }: {
+    state: WorldState;
+    id: string;
     name: string;
-    color: string;
+    actions: ProfileActions;
     front: boolean;
-    readOnly: boolean;
     onclose: () => void;
     onexpand: () => void;
-    onrename: (name: string) => void;
     /** Pressing the top strip starts a drag. */
     ondragstart: (event: PointerEvent) => void;
   } = $props();
 
   let editing = $state(false);
-  let draft = $state(untrack(() => name));
-  let sent = untrack(() => name);
+  const blocked = $derived(profileView(world, id)?.blocked ?? false);
 
-  /** Saves a changed, non-empty name once. */
-  function commit(): void {
-    const next = draft.trim();
-    if (next && next !== sent) {
-      sent = next;
-      onrename(next);
-    }
-  }
-
-  function startEditing(): void {
-    draft = name;
-    sent = name;
-    editing = true;
-  }
-
-  function finishEditing(): void {
-    commit();
-    editing = false;
-  }
+  // A file that breaks while it is being edited can't take edits any more.
+  $effect(() => {
+    if (blocked) editing = false;
+  });
 </script>
 
 <div
@@ -65,13 +53,13 @@
       <Maximize2 size={14} strokeWidth={1.5} />
     </IconButton>
     <span class="grow"></span>
-    {#if !readOnly}
+    {#if actions.canEdit}
       {#if editing}
-        <button type="button" class="done" onclick={finishEditing}>
+        <button type="button" class="done" onclick={() => (editing = false)}>
           <Check size={14} strokeWidth={1.5} aria-hidden="true" />Done
         </button>
       {:else}
-        <IconButton label="Edit {name}" onclick={startEditing}>
+        <IconButton label="Edit {name}" disabled={blocked} onclick={() => (editing = true)}>
           <Pencil size={14} strokeWidth={1.5} />
         </IconButton>
       {/if}
@@ -81,19 +69,7 @@
     </IconButton>
   </div>
   <div class="body">
-    <span class="ring" style:border-color={color} aria-hidden="true"></span>
-    {#if editing}
-      <input
-        aria-label="Name"
-        bind:value={draft}
-        onkeydown={(event) => {
-          if (event.key === "Enter") commit();
-        }}
-        onblur={commit}
-      />
-    {:else}
-      <h2>{name}</h2>
-    {/if}
+    <Profile state={world} {id} size="card" {editing} {actions} />
   </div>
 </div>
 
@@ -144,37 +120,9 @@
   }
 
   .body {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
+    flex: 1;
     min-height: 0;
     padding: var(--space-2) var(--space-3) var(--space-3);
     overflow: auto;
-  }
-
-  .ring {
-    flex-shrink: 0;
-    width: 32px;
-    height: 32px;
-    border: 2px solid var(--color-character-default);
-    border-radius: 50%;
-    background: var(--color-fill);
-  }
-
-  h2 {
-    margin: 0;
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
-    letter-spacing: -0.01em;
-  }
-
-  input {
-    flex: 1;
-    min-width: 0;
-    height: var(--size-control);
-    padding: 0 var(--space-2);
-    border: 1px solid var(--color-outline);
-    border-radius: var(--radius-control);
-    background: var(--color-page);
   }
 </style>

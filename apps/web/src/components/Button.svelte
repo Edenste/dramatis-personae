@@ -7,7 +7,7 @@
     children,
     ...rest
   }: {
-    variant?: "primary" | "secondary" | "plain";
+    variant?: "primary" | "secondary" | "plain" | "danger";
     children: Snippet;
   } & HTMLButtonAttributes = $props();
 </script>
@@ -35,11 +35,17 @@
     filter: brightness(1.08);
   }
 
-  .secondary {
+  .secondary,
+  .danger {
     background: var(--color-fill);
   }
 
+  .danger {
+    color: var(--color-danger);
+  }
+
   .secondary:hover:not(:disabled),
+  .danger:hover:not(:disabled),
   .plain:hover:not(:disabled) {
     background: var(--color-hover);
   }

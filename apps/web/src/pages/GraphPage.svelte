@@ -5,23 +5,40 @@
   import CardLayer from "../components/CardLayer.svelte";
   import { CARD, openCard, type Bounds } from "../lib/cards.ts";
   import { characterList, type WorldState } from "../lib/world-mirror.ts";
+  import type { ProfileActions } from "../profile/actions.ts";
 
   let {
     world,
     active,
     cards,
+    actions,
     oncards,
     onopentab,
-    onrename,
   }: {
     world: WorldState;
     /** False while another tab is showing, so the view can pause. */
     active: boolean;
     cards: CardState[];
+    /** The app's profile actions; here a character link opens a card, not a tab. */
+    actions: ProfileActions;
     oncards: (cards: CardState[]) => void;
     onopentab: (character: string) => void;
-    onrename: (character: string, name: string) => void;
   } = $props();
+
+  const cardActions: ProfileActions = {
+    get worldId() {
+      return actions.worldId;
+    },
+    get canEdit() {
+      return actions.canEdit;
+    },
+    run: (batch) => actions.run(batch),
+    runQuiet: (batch, options) => actions.runQuiet(batch, options),
+    setPortrait: (id, bytes, crop) => actions.setPortrait(id, bytes, crop),
+    removePortrait: (id) => actions.removePortrait(id),
+    openTab: (tab) => actions.openTab(tab),
+    openCharacter: (id) => oncards(openCard(cards, id, bounds, CARD.defaultHeight)),
+  };
 
   let host: HTMLElement | undefined = $state();
   let panel: HTMLElement | undefined = $state();
@@ -62,15 +79,7 @@
 
 <div class="graph" bind:this={panel}>
   <div class="canvas" bind:this={host}></div>
-  <CardLayer
-    {cards}
-    state={world}
-    readOnly={world.readOnly}
-    {bounds}
-    {oncards}
-    {onopentab}
-    {onrename}
-  />
+  <CardLayer {cards} state={world} actions={cardActions} {bounds} {oncards} {onopentab} />
 </div>
 
 <style>

@@ -11,6 +11,7 @@
     onswitch,
     onnew,
     onrename,
+    onfields,
     onopen,
   }: {
     worlds: WorldSummary[];
@@ -20,6 +21,8 @@
     onswitch: (id: string) => void;
     onnew: () => void;
     onrename: () => void;
+    /** Opens the Fields and templates tab. */
+    onfields: () => void;
     /** Called as the menu opens, so the list can be refreshed. */
     onopen?: () => void;
   } = $props();
@@ -72,6 +75,9 @@
           {#if current}<Check size={14} strokeWidth={1.5} aria-hidden="true" />{/if}
         </button>
       {/each}
+      <button type="button" role="menuitem" class="item" onclick={() => choose(onfields)}>
+        Fields and templates
+      </button>
       <div class="separator" role="separator"></div>
       <button type="button" role="menuitem" class="item" onclick={() => choose(onnew)}>
         New world…

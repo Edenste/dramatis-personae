@@ -157,6 +157,98 @@ describe("WorldConnection", () => {
     expect(history.canUndo).toBe(true);
   });
 
+  describe("portraits", () => {
+    const portrait = `${base}/characters/${IDS.lancelot}/portrait`;
+    const noUndo: CommandResult = { inverse: { commands: [] }, fingerprints: {} };
+    const crop = { x: 0.1, y: 0, size: 0.5 };
+
+    it("uploads the image bytes with the crop in the query, and records no undo", async () => {
+      server.routes[`PUT ${portrait}`] = { body: noUndo };
+      await opened();
+      const bytes = new Uint8Array([1, 2, 3]);
+      expect(await connection.setPortrait(IDS.lancelot, bytes, crop)).toBe(true);
+      const sent = server.requests.at(-1)!;
+      expect(sent).toMatchObject({
+        method: "PUT",
+        path: portrait,
+        contentType: "application/octet-stream",
+      });
+      expect([...(sent.body as Uint8Array)]).toEqual([1, 2, 3]);
+      expect(new URLSearchParams(sent.query).get("size")).toBe("0.5");
+      expect(history.canUndo).toBe(false);
+    });
+
+    it("shows the server's reason when an upload is refused", async () => {
+      server.routes[`PUT ${portrait}`] = {
+        status: 415,
+        body: { code: "unsupported-image", message: "That file isn't a supported image." },
+      };
+      await opened();
+      expect(await connection.setPortrait(IDS.lancelot, new Uint8Array([1]), crop)).toBe(false);
+      expect(toast).toHaveBeenCalledWith("That file isn't a supported image.");
+    });
+
+    it("removes a portrait, with no undo", async () => {
+      server.routes[`DELETE ${portrait}`] = { body: noUndo };
+      await opened();
+      expect(await connection.removePortrait(IDS.lancelot)).toBe(true);
+      expect(history.canUndo).toBe(false);
+    });
+
+    it("won't upload while a change is unsaved", async () => {
+      server.routes[`GET ${base}`] = { body: snapshot({ unsaved: { message: "Not saved." } }) };
+      await opened();
+      expect(await connection.setPortrait(IDS.lancelot, new Uint8Array([1]), crop)).toBe(false);
+      expect(toast).toHaveBeenCalledWith("Not saved.");
+      expect(server.requests.filter((r) => r.method === "PUT")).toHaveLength(0);
+    });
+  });
+
+  it("records no undo for a retried change that has no inverse", async () => {
+    server.routes[`POST ${base}/retry`] = {
+      body: { inverse: { commands: [] }, fingerprints: {} },
+    };
+    await opened();
+    await connection.retry();
+    expect(history.canUndo).toBe(false);
+  });
+
+  describe("runQuiet", () => {
+    it("records the edit for undo and returns the result", async () => {
+      server.routes[`POST ${base}/commands`] = { body: renamed };
+      await opened();
+      expect(await connection.runQuiet(rename)).toEqual({ ok: true, result: renamed });
+      expect(history.canUndo).toBe(true);
+    });
+
+    it("reports a conflict to the caller without a toast", async () => {
+      server.routes[`POST ${base}/commands`] = conflict;
+      await opened();
+      expect(await connection.runQuiet(rename)).toEqual({ ok: false, conflict: true });
+      expect(toast).not.toHaveBeenCalled();
+      expect(history.canUndo).toBe(false);
+    });
+
+    it("can ask for a request that outlives the page, for a save as it closes", async () => {
+      server.routes[`POST ${base}/commands`] = { body: renamed };
+      await opened();
+      await connection.runQuiet(rename, { keepalive: true });
+      expect(server.requests.at(-1)?.keepalive).toBe(true);
+      await connection.runQuiet(rename);
+      expect(server.requests.at(-1)?.keepalive).toBe(false);
+    });
+
+    it("toasts any other failure", async () => {
+      server.routes[`POST ${base}/commands`] = {
+        status: 400,
+        body: { code: "invalid", message: "Nope." },
+      };
+      await opened();
+      expect(await connection.runQuiet(rename)).toEqual({ ok: false, conflict: false });
+      expect(toast).toHaveBeenCalledWith("Nope.");
+    });
+  });
+
   it("marks the world unavailable when the socket says so", async () => {
     await opened();
     FakeSocket.all[0]!.drop(4004, "Made by a newer version");

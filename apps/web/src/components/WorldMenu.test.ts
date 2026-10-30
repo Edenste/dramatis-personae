@@ -14,7 +14,13 @@ const avalon = {
 
 describe("WorldMenu", () => {
   const open = async (readOnly = false) => {
-    const handlers = { onswitch: vi.fn(), onnew: vi.fn(), onrename: vi.fn(), onopen: vi.fn() };
+    const handlers = {
+      onswitch: vi.fn(),
+      onnew: vi.fn(),
+      onrename: vi.fn(),
+      onfields: vi.fn(),
+      onopen: vi.fn(),
+    };
     render(WorldMenu, {
       worlds: [camelot, logres, avalon],
       currentId: camelot.id,
@@ -25,6 +31,12 @@ describe("WorldMenu", () => {
     await fireEvent.click(screen.getByRole("button", { name: /Camelot/ }));
     return handlers;
   };
+
+  it("opens the Fields and templates tab", async () => {
+    const handlers = await open();
+    await fireEvent.click(screen.getByRole("menuitem", { name: "Fields and templates" }));
+    expect(handlers.onfields).toHaveBeenCalledOnce();
+  });
 
   it("lists the worlds, ticking the open one", async () => {
     await open();

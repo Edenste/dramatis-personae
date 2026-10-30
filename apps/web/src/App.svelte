@@ -29,9 +29,11 @@
   import { WorldConnection, type WebSocketLike } from "./lib/world-connection.svelte.ts";
   import { characterById, worldName } from "./lib/world-mirror.ts";
   import { WorkspaceState } from "./lib/workspace.svelte.ts";
+  import type { ProfileActions } from "./profile/actions.ts";
   import DataRootProblem from "./pages/DataRootProblem.svelte";
   import CharacterPage from "./pages/CharacterPage.svelte";
   import DashboardPage from "./pages/DashboardPage.svelte";
+  import FieldsPage from "./pages/FieldsPage.svelte";
   import FirstRun from "./pages/FirstRun.svelte";
   import GraphPage from "./pages/GraphPage.svelte";
   import ProblemsPage from "./pages/ProblemsPage.svelte";
@@ -65,6 +67,7 @@
     if (tab === "graph") return "Graph";
     if (tab === "dashboard") return "Dashboard";
     if (tab === "problems") return "Problems";
+    if (tab === "fields") return "Fields and templates";
     const id = tab.slice("character/".length);
     const state = connection?.state;
     return (state && characterById(state, id)?.name) ?? "Deleted character";
@@ -215,15 +218,27 @@
     navigate(locationFor(connection.worldId, next), { replace: true });
   }
 
-  function renameCharacter(id: string, name: string): void {
-    void connection?.run({
-      commands: [{ type: "character.update", id, set: { name } }],
-    });
-  }
-
   function openCharacterTab(id: string): void {
     selectTab(`character/${id}`);
   }
+
+  /** What a profile can do in the open world; a link opens a tab (the Graph overrides that). */
+  const profileActions = $derived.by((): ProfileActions | null => {
+    const open = connection;
+    if (!open) return null;
+    return {
+      worldId: open.worldId,
+      get canEdit() {
+        return open.state !== null && !open.state.readOnly;
+      },
+      run: (batch) => open.run(batch),
+      runQuiet: (batch, options) => open.runQuiet(batch, options),
+      setPortrait: (id, bytes, crop) => open.setPortrait(id, bytes, crop),
+      removePortrait: (id) => open.removePortrait(id),
+      openCharacter: openCharacterTab,
+      openTab: selectTab,
+    };
+  });
 
   async function openDataFolder(): Promise<void> {
     try {
@@ -257,6 +272,7 @@
         onswitch={(id: string) => void switchWorld(id)}
         onnew={() => (dialog = "new")}
         onrename={() => (dialog = "rename")}
+        onfields={() => selectTab("fields")}
         onopen={() => void refreshWorlds()}
       />
       <TabStrip
@@ -314,14 +330,16 @@
             {#if connection.state}
               <!-- The graph stays mounted while another tab shows, so it keeps its place. -->
               <div class="graph-host" hidden={workspace.active !== "graph"}>
-                <GraphPage
-                  world={connection.state}
-                  active={workspace.active === "graph"}
-                  cards={workspace.cards.graph ?? []}
-                  oncards={(cards: CardState[]) => workspace?.setCards("graph", cards)}
-                  onopentab={openCharacterTab}
-                  onrename={renameCharacter}
-                />
+                {#if profileActions}
+                  <GraphPage
+                    world={connection.state}
+                    active={workspace.active === "graph"}
+                    cards={workspace.cards.graph ?? []}
+                    actions={profileActions}
+                    oncards={(cards: CardState[]) => workspace?.setCards("graph", cards)}
+                    onopentab={openCharacterTab}
+                  />
+                {/if}
               </div>
               {#if workspace.active !== "graph"}
                 {#key workspace.active}
@@ -338,10 +356,13 @@
                         recent={workspace.recent}
                         onopen={openCharacterTab}
                       />
-                    {:else}
+                    {:else if workspace.active === "fields" && profileActions}
+                      <FieldsPage state={connection.state} actions={profileActions} />
+                    {:else if workspace.active.startsWith("character/") && profileActions}
                       <CharacterPage
                         state={connection.state}
                         id={workspace.active.slice("character/".length)}
+                        actions={profileActions}
                       />
                     {/if}
                   </section>

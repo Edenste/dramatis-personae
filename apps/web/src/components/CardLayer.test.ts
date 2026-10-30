@@ -1,12 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/svelte";
 import { describe, expect, it, vi } from "vitest";
 import type { CardState } from "@dramatis-personae/schema";
-import { IDS, snapshot } from "../test-utils/fixtures.ts";
+import { fakeActions } from "../test-utils/fakes.ts";
+import { IDS, profileSnapshot, withData } from "../test-utils/fixtures.ts";
 import { fromSnapshot } from "../lib/world-mirror.ts";
 import CardLayer from "./CardLayer.svelte";
 
 const bounds = { width: 1000, height: 600 };
-const state = fromSnapshot(snapshot());
+const state = fromSnapshot(profileSnapshot());
 const card = (character: string, x: number, y: number): CardState => ({
   character,
   x,
@@ -16,17 +17,18 @@ const card = (character: string, x: number, y: number): CardState => ({
 });
 const stored = [card(IDS.merlin, 20, 20), card(IDS.lancelot, 400, 60)];
 
-function setup(overrides: Record<string, unknown> = {}) {
-  const handlers = { oncards: vi.fn(), onopentab: vi.fn(), onrename: vi.fn() };
+function setup(overrides: Record<string, unknown> = {}, actionOverrides = {}) {
+  const fake = fakeActions(actionOverrides);
+  const handlers = { oncards: vi.fn(), onopentab: vi.fn() };
   const view = render(CardLayer, {
     cards: stored,
     state,
-    readOnly: false,
     bounds,
+    actions: fake.actions,
     ...handlers,
     ...overrides,
   });
-  return { ...handlers, ...view };
+  return { ...handlers, ...fake, ...view };
 }
 
 const dialog = (name: string) => screen.getByRole("dialog", { name });
@@ -66,30 +68,66 @@ describe("CardLayer", () => {
     ]);
   });
 
-  it("edits the name: the pencil becomes Done, and Enter saves", async () => {
-    const { onrename } = setup();
+  it("shows the character's profile", () => {
+    setup();
+    expect(screen.getByText("Arondight")).toBeTruthy();
+    expect(screen.getByText("15 August")).toBeTruthy();
+    expect(screen.queryByRole("textbox")).toBeNull();
+  });
+
+  it("edits the profile: the pencil becomes Done, and a changed name is saved", async () => {
+    const { batches } = setup();
     await fireEvent.click(screen.getByRole("button", { name: "Edit Lancelot" }));
     expect(screen.getByRole("button", { name: "Done" })).toBeTruthy();
+    // Empty fields appear while editing.
+    expect(screen.getByRole("textbox", { name: "Steed" })).toBeTruthy();
     const field = screen.getByRole("textbox", { name: "Name" });
     await fireEvent.input(field, { target: { value: "Sir Lancelot" } });
     await fireEvent.keyDown(field, { key: "Enter" });
-    expect(onrename).toHaveBeenCalledOnce();
-    expect(onrename).toHaveBeenCalledWith(IDS.lancelot, "Sir Lancelot");
+    expect(batches).toEqual([
+      {
+        commands: [{ type: "character.update", id: IDS.lancelot, set: { name: "Sir Lancelot" } }],
+      },
+    ]);
+    await fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(screen.queryByRole("textbox", { name: "Name" })).toBeNull();
   });
 
   it("doesn't save an empty or unchanged name", async () => {
-    const { onrename } = setup();
+    const { batches } = setup();
     await fireEvent.click(screen.getByRole("button", { name: "Edit Lancelot" }));
     const field = screen.getByRole("textbox", { name: "Name" });
     await fireEvent.input(field, { target: { value: "  " } });
     await fireEvent.keyDown(field, { key: "Enter" });
     await fireEvent.click(screen.getByRole("button", { name: "Done" }));
-    expect(onrename).not.toHaveBeenCalled();
+    expect(batches).toEqual([]);
   });
 
-  it("offers no editing in a read-only world", () => {
-    setup({ readOnly: true });
+  it("leaves out the templates and notes controls on a card", async () => {
+    setup();
+    await fireEvent.click(screen.getByRole("button", { name: "Edit Lancelot" }));
+    expect(screen.queryByRole("button", { name: "Remove the Knight template" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Add a field" })).toBeTruthy();
+  });
+
+  it("offers no editing to someone who can't edit", () => {
+    setup({}, { canEdit: false });
     expect(screen.queryByRole("button", { name: "Edit Lancelot" })).toBeNull();
+  });
+
+  it("opens a character from a link in a card through the actions", async () => {
+    const snapshot = profileSnapshot();
+    snapshot.files = snapshot.files.map((file) =>
+      file.ref.kind === "character" && file.ref.id === IDS.lancelot
+        ? withData(file, {
+            extraFields: ["liege"],
+            fields: { ...(file.data as { fields: object }).fields, liege: IDS.arthur },
+          })
+        : file,
+    );
+    const { opened } = setup({ state: fromSnapshot(snapshot) });
+    await fireEvent.click(screen.getByRole("link", { name: "Open Arthur" }));
+    expect(opened).toEqual([IDS.arthur]);
   });
 
   it("drops the card of a character that no longer exists", () => {

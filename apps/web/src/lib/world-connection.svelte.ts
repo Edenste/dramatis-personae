@@ -2,6 +2,7 @@ import {
   ServerMessageSchema,
   type CommandBatch,
   type CommandResult,
+  type Crop,
   type FixRequest,
   type ServerMessage,
 } from "@dramatis-personae/schema";
@@ -16,6 +17,9 @@ export interface WebSocketLike {
   onclose: ((event: { code: number; reason: string }) => void) | null;
   close(): void;
 }
+
+/** The answer to an edit the caller wants to handle a conflict for itself. */
+export type QuietResult = { ok: true; result: CommandResult } | { ok: false; conflict: boolean };
 
 const WORLD_UNAVAILABLE = 4004;
 const FIRST_RETRY = 500;
@@ -106,6 +110,66 @@ export class WorldConnection {
     return result;
   }
 
+  /** Like `run`, but a conflict is returned, not toasted, so the notes can offer keep mine / take theirs. */
+  async runQuiet(batch: CommandBatch, options: { keepalive?: boolean } = {}): Promise<QuietResult> {
+    if (this.refuseWhileUnsaved()) return { ok: false, conflict: false };
+    try {
+      const result = unwrap(
+        await this.deps.api.POST("/api/worlds/{w}/commands", {
+          params: { path: { w: this.worldId } },
+          body: batch,
+          // A save as the page closes must outlive it.
+          ...(options.keepalive ? { keepalive: true } : {}),
+        }),
+      );
+      this.deps.history.recordEdit(result);
+      this.syncHistory();
+      return { ok: true, result };
+    } catch (error) {
+      if (error instanceof ApiFailure && error.code === "conflict") {
+        return { ok: false, conflict: true };
+      }
+      this.report(error);
+      return { ok: false, conflict: false };
+    }
+  }
+
+  /** Replaces a character's portrait. It overwrites the old image, so there is no undo. */
+  async setPortrait(id: string, bytes: Uint8Array, crop: Crop): Promise<boolean> {
+    if (this.refuseWhileUnsaved()) return false;
+    try {
+      unwrap(
+        await this.deps.api.PUT("/api/worlds/{w}/characters/{id}/portrait", {
+          params: { path: { w: this.worldId, id }, query: crop },
+          // The route takes raw image bytes, which the generated types don't describe.
+          body: bytes as never,
+          bodySerializer: (body: unknown) => body,
+          headers: { "content-type": "application/octet-stream" },
+        }),
+      );
+      return true;
+    } catch (error) {
+      this.report(error);
+      return false;
+    }
+  }
+
+  /** Deletes a character's portrait image. There is no undo. */
+  async removePortrait(id: string): Promise<boolean> {
+    if (this.refuseWhileUnsaved()) return false;
+    try {
+      unwrap(
+        await this.deps.api.DELETE("/api/worlds/{w}/characters/{id}/portrait", {
+          params: { path: { w: this.worldId, id } },
+        }),
+      );
+      return true;
+    } catch (error) {
+      this.report(error);
+      return false;
+    }
+  }
+
   async undo(): Promise<void> {
     await this.replay("undo");
   }
@@ -129,7 +193,8 @@ export class WorldConnection {
     const result = await this.post(() =>
       this.deps.api.POST("/api/worlds/{w}/retry", { params: { path: { w: this.worldId } } }),
     );
-    if (result) this.deps.history.recordEdit(result);
+    // A retried portrait change has no inverse, so there is nothing to undo.
+    if (result && result.inverse.commands.length > 0) this.deps.history.recordEdit(result);
     this.syncHistory();
   }
 

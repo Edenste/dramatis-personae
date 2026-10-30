@@ -6,12 +6,15 @@
     onclose,
     anchor,
     label,
+    role = "menu",
     children,
   }: {
     onclose: () => void;
     /** Presses on the anchor (the button that opened it) don't count as outside. */
     anchor?: HTMLElement;
     label: string;
+    /** "dialog" for a popover that holds a text field or other controls, not just menu rows. */
+    role?: "menu" | "dialog";
     children: Snippet;
   } = $props();
 
@@ -34,7 +37,7 @@
 <div
   bind:this={root}
   class="popover"
-  role="menu"
+  {role}
   aria-label={label}
   in:settleIn={{ origin: "top left" }}
   out:settleOut={{ origin: "top left" }}

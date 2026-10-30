@@ -26,6 +26,7 @@ describe("addresses", () => {
 
   it("recognises tab addresses", () => {
     expect(isTabAddress("dashboard")).toBe(true);
+    expect(isTabAddress("fields")).toBe(true);
     expect(isTabAddress(`character/${lancelot}`)).toBe(true);
     expect(isTabAddress("character/")).toBe(false);
     expect(isTabAddress("settings")).toBe(false);

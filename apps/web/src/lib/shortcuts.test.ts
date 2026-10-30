@@ -33,6 +33,15 @@ describe("historyShortcut", () => {
     expect(historyShortcut({ ...key("z", { ctrl: true }), target: editable }, "other")).toBeNull();
   });
 
+  it("leaves the notes editor its own undo, from any line inside it", () => {
+    const content = document.createElement("div");
+    content.setAttribute("contenteditable", "true");
+    const line = document.createElement("div");
+    content.append(line);
+    expect(historyShortcut({ ...key("z", { ctrl: true }), target: line }, "other")).toBeNull();
+    expect(historyShortcut({ ...key("y", { ctrl: true }), target: line }, "other")).toBeNull();
+  });
+
   it("ignores other keys", () => {
     expect(historyShortcut(key("x", { ctrl: true }), "other")).toBeNull();
     expect(historyShortcut(key("z"), "other")).toBeNull();
