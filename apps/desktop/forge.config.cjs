@@ -3,8 +3,9 @@ module.exports = {
   packagerConfig: {
     name: "Dramatis Personae",
     executableName: "dramatis-personae",
-    asar: true,
-    // Everything runs from the bundle, so only it and package.json ship.
+    // Native binaries can't load from inside the archive, so sharp and its binaries are unpacked.
+    asar: { unpack: "**/node_modules/{sharp,@img}/**/*" },
+    // Everything runs from the bundle (and dist/node_modules, which holds sharp), so only dist and package.json ship.
     ignore: (path) => path !== "" && !/^\/(dist(\/|$)|package\.json$)/.test(path),
   },
   makers: [

@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "@dramatis-personae/server": "workspace:*",
-    "electron-squirrel-startup": "^1.0.1"
+    "electron-squirrel-startup": "^1.0.1",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@dramatis-personae/samples": "workspace:*",
