@@ -8,7 +8,7 @@ Guidance for working in this repository.
 
 ## Status
 
-Foundations is built: the data layer (`schema`, `core`), the local server, the generated API client, the Svelte web app (shell, tabs, worlds, Problems, Settings, character cards) and the Electron shell, with end-to-end tests and installer builds in CI. Profiles, the graph canvas, search, relationships and the calendar come in later specs. Decisions and their reasoning are recorded as ADRs in [decisions/](decisions/README.md). Decided so far:
+Foundations is built: the data layer (`schema`, `core`), the local server, the generated API client, the Svelte web app (shell, tabs, worlds, Problems, Settings, character cards) and the Electron shell, with end-to-end tests and installer builds in CI. Character profiles are built on top: fields and templates (with a tab to manage them), a Markdown notes editor, and portraits with circular crops. The graph canvas, role picker and search, relationships and the calendar come in later specs. Decisions and their reasoning are recorded as ADRs in [decisions/](decisions/README.md). Decided so far:
 
 - **Runtime:** a local Node server owns the data directory and serves a web client; the first release ships in an Electron shell, and the server can also run headless ([0002](decisions/0002-local-server-architecture.md)).
 - **Graph:** a framework-independent canvas module using PixiJS v8, with d3-force running in a Web Worker ([0003](decisions/0003-graph-rendering.md)).
@@ -26,6 +26,10 @@ Foundations is built: the data layer (`schema`, `core`), the local server, the g
 - **Data model:** random 16-character IDs with cosmetic names in file names (`lancelot-pm6i0t9upq3sgptb.json`); references use bare IDs; one file per pair of characters for relationships; libraries (fields, roles, relationship types, templates) in one ordered file each; documents (characters, relationships, events, views, searches) one file each ([0010](decisions/0010-world-data-model.md)).
 
 - **Design language:** a Mac-native look — tabs in the title bar, rounded panels, floating character cards on the Graph, Apple's system colours, bundled Inter, and fade-and-settle motion; every colour, size and duration comes from design tokens ([0012](decisions/0012-design-language.md)).
+
+- **Notes editor:** CodeMirror 6 with an Obsidian-style live preview, `/` and `@` menus and a right-click menu drawn by the app; the Markdown is never re-serialised ([0013](decisions/0013-notes-editor.md)).
+
+- **Images:** `sharp` on the server checks uploads and makes portrait thumbnails; one image file per character, overwritten; shipped beside the desktop bundle and unpacked from the app archive ([0014](decisions/0014-image-processing.md)).
 
 - **Edits:** every edit is a command that returns its inverse; all writes go through one command endpoint; undo/redo lives in the client and clears on close; changes, including outside edits to the files, are pushed over WebSocket ([0011](decisions/0011-edits-as-commands.md)).
 
@@ -50,6 +54,7 @@ Requires Node ≥ 22 and pnpm 10. Run from the repository root:
 | `pnpm test:e2e` | Build the desktop app and run the Playwright tests in a browser and in Electron (first: `pnpm --filter @dramatis-personae/desktop exec playwright install chromium`; `E2E_SKIP_ELECTRON=1` skips Electron) |
 | `pnpm --filter @dramatis-personae/web build` | Build the web app into `apps/web/dist` |
 | `pnpm --filter @dramatis-personae/desktop make` | Build the installer (Squirrel on Windows, DMG and ZIP on macOS) into `apps/desktop/out/make/` |
+| `"<path to the packaged app>" --self-test-images` | Check image processing in a packaged desktop build (after `pnpm --filter @dramatis-personae/desktop package`): it makes a thumbnail, prints `images ok 256x256` and exits with code 0, without opening a window |
 | `pnpm generate:api` | Regenerate `packages/api-client` from the server's OpenAPI spec; commit the result |
 
 CI (`.github/workflows/ci.yml`) checks the generated API client is current, then runs typecheck, lint, format check, boundary check and tests on Ubuntu and Windows, followed by the end-to-end tests (browser on both; the desktop app on Windows). `.github/workflows/installers.yml` builds the Windows and macOS installers for pull requests to `main`, pushes to `main` and on demand, and uploads them as artifacts without publishing.
@@ -89,7 +94,7 @@ CLAUDE.md          development guidance (this file)
 decisions/         architecture decision records (ADRs) and their index
 apps/
   desktop/         Electron main process: starts the server, opens a locked-down window; bundled with esbuild; its `e2e/` folder holds the Playwright tests
-  web/             Svelte 5 + Vite app: shell, tabs, worlds, Problems, Settings, cards; design tokens in `src/styles/tokens.css`
+  web/             Svelte 5 + Vite app: shell, tabs, worlds, Problems, Settings, cards; design tokens in `src/styles/tokens.css`; character profiles in `src/profile/` (fields, controls, portraits) and the notes editor in `src/notes/`
   server/          Fastify server: data root and Config/, security, routes, WebSocket, world sessions
 packages/
   schema/          Zod schemas for files and API messages, IDs and file names

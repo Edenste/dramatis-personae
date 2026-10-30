@@ -20,6 +20,8 @@ Each record captures one decision: the context at the time, the options consider
 | [0010](0010-world-data-model.md) | World data model: IDs, file names and document shapes | Accepted | 2026-10-28 |
 | [0011](0011-edits-as-commands.md) | Edits as commands, with autosave, client-side undo and live updates | Accepted | 2026-10-28 |
 | [0012](0012-design-language.md) | A Mac-native design language: tabs in the title bar, floating cards and fade-and-settle motion | Accepted | 2026-10-30 |
+| [0013](0013-notes-editor.md) | CodeMirror 6 with a live preview for character notes | Accepted | 2026-10-30 |
+| [0014](0014-image-processing.md) | `sharp` on the server for portraits | Accepted | 2026-10-30 |
 
 ## Adding a record
 
