@@ -174,6 +174,84 @@ describe("WorldConnection", () => {
     expect(connection.unavailableReason).toBe("Couldn't update this world");
   });
 
+  const renamedMerlin = (seq: number, name: string) =>
+    snapshot({
+      seq,
+      files: snapshot().files.map((file) =>
+        "id" in file.ref && file.ref.id === IDS.merlin ? characterFile(IDS.merlin, name) : file,
+      ),
+    });
+  const merlinName = () => characterById(connection.state!, IDS.merlin)?.name;
+
+  it("keeps the newest snapshot when an older request finishes last", async () => {
+    server.routes[`POST ${base}/discard-unsaved`] = { status: 204 };
+    await opened();
+    const requests: Array<(reply: Reply) => void> = [];
+    server.routes[`GET ${base}`] = () => new Promise<Reply>((resolve) => requests.push(resolve));
+    FakeSocket.all[0]!.push({ type: "reload", world: WORLD, seq: 6 });
+    await vi.waitFor(() => expect(requests).toHaveLength(1));
+    const discarding = connection.discardUnsaved();
+    await vi.waitFor(() => expect(requests).toHaveLength(2));
+    requests[1]!({ body: renamedMerlin(11, "Myrddin") });
+    await discarding;
+    requests[0]!({ body: renamedMerlin(10, "Merlin") });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(merlinName()).toBe("Myrddin");
+    expect(connection.state!.seq).toBe(11);
+  });
+
+  it("fetches again when a reload arrives while a snapshot is loading", async () => {
+    await opened();
+    const requests: Array<(reply: Reply) => void> = [];
+    server.routes[`GET ${base}`] = () => new Promise<Reply>((resolve) => requests.push(resolve));
+    const socket = FakeSocket.all[0]!;
+    socket.push({ type: "reload", world: WORLD, seq: 6 });
+    await vi.waitFor(() => expect(requests).toHaveLength(1));
+    socket.push({ type: "reload", world: WORLD, seq: 7 });
+    requests[0]!({ body: renamedMerlin(6, "Merlin") });
+    await vi.waitFor(() => expect(requests).toHaveLength(2));
+    requests[1]!({ body: renamedMerlin(7, "Myrddin") });
+    await vi.waitFor(() => expect(merlinName()).toBe("Myrddin"));
+  });
+
+  it("tries a failed snapshot again, and applies the pushes that came meanwhile", async () => {
+    await opened();
+    vi.useFakeTimers();
+    let attempts = 0;
+    server.routes[`GET ${base}`] = () => {
+      attempts += 1;
+      return attempts === 1
+        ? { status: 503, body: { code: "data-root-unavailable", message: "Not ready" } }
+        : { body: snapshot() };
+    };
+    FakeSocket.all[0]!.drop(1006);
+    await vi.advanceTimersByTimeAsync(500);
+    const socket = FakeSocket.all[1]!;
+    socket.open();
+    await vi.waitFor(() => expect(attempts).toBe(1));
+    socket.push({
+      type: "changed",
+      world: WORLD,
+      seq: 6,
+      files: [characterFile(IDS.merlin, "Myrddin")],
+      removed: [],
+    });
+    await vi.advanceTimersByTimeAsync(500);
+    await vi.waitFor(() => expect(attempts).toBe(2));
+    await vi.waitFor(() => expect(merlinName()).toBe("Myrddin"));
+  });
+
+  it("finishes opening even when the first socket drops before it connects", async () => {
+    const opening = connect().open();
+    await vi.waitFor(() => expect(FakeSocket.all).toHaveLength(1));
+    FakeSocket.all[0]!.drop(1006);
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    await vi.waitFor(() => expect(FakeSocket.all).toHaveLength(2));
+    FakeSocket.all[1]!.open();
+    await opening;
+    expect(connection.status).toBe("ready");
+  });
+
   it("reconnects after a drop, backing off, and fetches a fresh snapshot", async () => {
     await opened();
     vi.useFakeTimers();

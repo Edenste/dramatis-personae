@@ -1,3 +1,4 @@
+import { posix, win32 } from "node:path";
 import {
   SettingsResultSchema,
   SettingsSchema,
@@ -9,6 +10,13 @@ import { writeOptions } from "../config/options.ts";
 import type { App, ServerContext } from "../context.ts";
 import { ApiError } from "../http/errors.ts";
 import { requireOwner } from "../http/permissions.ts";
+
+/** True when `path` is `folder` itself or inside it; Windows-style paths compare as Windows paths. */
+function isInside(path: string, folder: string): boolean {
+  const flavour = /^[A-Za-z]:|^\\/.test(folder) ? win32 : posix;
+  const relative = flavour.relative(folder, path);
+  return relative === "" || (!relative.startsWith("..") && !flavour.isAbsolute(relative));
+}
 
 function settingsOf(ctx: ServerContext): Settings {
   return {
@@ -30,6 +38,15 @@ export function settingsRoutes(app: App, ctx: ServerContext): void {
     async (request) => {
       requireOwner(request.user);
       const { theme, dataPath } = request.body;
+      const installDir = ctx.desktop?.installDir;
+      if (dataPath && installDir && isInside(dataPath, installDir)) {
+        throw new ApiError(
+          400,
+          "invalid",
+          "That folder is inside the app's own folder, which is deleted when the app is uninstalled. Choose another.",
+          { path: "dataPath" },
+        );
+      }
       const next: OptionsFile = { ...ctx.options, ...(theme ? { theme } : {}) };
       if (dataPath === null) delete next.dataPath;
       else if (dataPath !== undefined) next.dataPath = dataPath;

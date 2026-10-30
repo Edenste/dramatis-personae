@@ -58,6 +58,12 @@ export class WorldConnection {
   private retries = 0;
   private retryTimer: ReturnType<typeof setTimeout> | undefined;
   private stableTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Numbers snapshot requests; only the newest one's answer is used. */
+  private snapshotTicket = 0;
+  private snapshotRetries = 0;
+  private snapshotTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Resolves open(), whichever socket and request first get an answer. */
+  private ready: (() => void) | undefined;
 
   constructor(
     readonly worldId: string,
@@ -73,13 +79,17 @@ export class WorldConnection {
 
   /** Connects the socket, then loads the snapshot, so no change falls between them. */
   open(): Promise<void> {
-    return new Promise((resolve) => this.connect(resolve));
+    return new Promise((resolve) => {
+      this.ready = resolve;
+      this.connect();
+    });
   }
 
   close(): void {
     this.closed = true;
     clearTimeout(this.retryTimer);
     clearTimeout(this.stableTimer);
+    clearTimeout(this.snapshotTimer);
     this.socket?.close();
   }
 
@@ -186,7 +196,13 @@ export class WorldConnection {
     this.canRedo = this.deps.history.canRedo;
   }
 
-  private connect(onReady?: () => void): void {
+  private signalReady(): void {
+    this.ready?.();
+    this.ready = undefined;
+  }
+
+  private connect(): void {
+    clearTimeout(this.snapshotTimer);
     const protocol = location.protocol === "https:" ? "wss" : "ws";
     const socket = (this.deps.socket ?? defaultSocket)(
       `${protocol}://${location.host}/ws?world=${this.worldId}`,
@@ -197,14 +213,14 @@ export class WorldConnection {
     socket.onmessage = (event) => this.receive(event.data);
     socket.onopen = () => {
       this.stableTimer = setTimeout(() => (this.retries = 0), STABLE_AFTER);
-      void this.loadSnapshot().finally(() => onReady?.());
+      void this.loadSnapshot();
     };
     socket.onclose = (event) => {
       clearTimeout(this.stableTimer);
       if (this.closed) return;
       if (event.code === WORLD_UNAVAILABLE) {
         this.markUnavailable(event.reason || "This world can't be opened.");
-        onReady?.();
+        this.signalReady();
         return;
       }
       const delay = Math.min(FIRST_RETRY * 2 ** this.retries, LONGEST_RETRY);
@@ -214,26 +230,39 @@ export class WorldConnection {
   }
 
   private async loadSnapshot(): Promise<void> {
+    const ticket = ++this.snapshotTicket;
     this.loading = true;
+    clearTimeout(this.snapshotTimer);
     try {
       const snapshot = unwrap(
         await this.deps.api.GET("/api/worlds/{w}", { params: { path: { w: this.worldId } } }),
       );
+      if (ticket !== this.snapshotTicket || this.closed) return; // a newer request took over
       let state = fromSnapshot(snapshot);
+      let again = false;
       for (const message of this.buffered) {
         const next = applyMessage(state, message);
-        if (next !== "reload") state = next;
+        if (next === "reload") again = true;
+        else state = next;
       }
       this.buffered = [];
       this.loading = false;
       this.state = state;
       this.status = "ready";
+      this.snapshotRetries = 0;
+      this.signalReady();
+      if (again) void this.loadSnapshot();
     } catch (error) {
+      if (ticket !== this.snapshotTicket || this.closed) return;
       if (error instanceof ApiFailure && (error.status === 404 || error.status === 409)) {
         this.markUnavailable(error.message);
       } else {
-        this.report(error);
+        if (this.snapshotRetries === 0) this.report(error);
+        const delay = Math.min(FIRST_RETRY * 2 ** this.snapshotRetries, LONGEST_RETRY);
+        this.snapshotRetries += 1;
+        this.snapshotTimer = setTimeout(() => void this.loadSnapshot(), delay);
       }
+      this.signalReady();
     }
   }
 

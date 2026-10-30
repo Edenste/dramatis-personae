@@ -61,6 +61,20 @@ describe("desktop hooks", () => {
     expect(fake.appearanceChanged).toHaveBeenCalledWith("dark");
   });
 
+  it("refuses a data folder inside the installer's own folder, which uninstalling deletes", async () => {
+    const install = "C:\\Users\\a\\AppData\\Local\\DramatisPersonae";
+    const fake = fakeHooks();
+    fake.hooks.installDir = install;
+    server = await testServer({ desktop: fake.hooks });
+    for (const dataPath of [install, `${install}\\Worlds`]) {
+      const response = await call("PUT", "/api/settings", { dataPath });
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toMatchObject({ code: "invalid" });
+    }
+    const fine = await call("PUT", "/api/settings", { dataPath: `${install} Data` });
+    expect(fine.statusCode).toBe(200);
+  });
+
   it("lets only the owner change settings, open or choose folders, or restart", async () => {
     server = await testServer({ desktop: fakeHooks().hooks, user: viewer });
     const attempts = [

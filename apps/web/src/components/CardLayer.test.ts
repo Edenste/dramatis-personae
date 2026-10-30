@@ -100,9 +100,19 @@ describe("CardLayer", () => {
     ]);
   });
 
-  it("pulls a stored card that is off the page back inside", () => {
+  it("shows a stored card that is off the page back inside, without rewriting where it was", () => {
     const { oncards } = setup({ cards: [card(IDS.merlin, 2000, 50)] });
-    expect(oncards.mock.calls.at(-1)![0]).toEqual([card(IDS.merlin, 720, 50)]);
+    expect(dialog("Merlin").parentElement!.style.left).toBe("720px");
+    expect(oncards).not.toHaveBeenCalled();
+  });
+
+  it("moves a card from where it is shown when dragged on a smaller page", async () => {
+    const { oncards } = setup({ cards: [card(IDS.merlin, 2000, 50)] });
+    const strip = dialog("Merlin").querySelector(".strip")!;
+    await fireEvent.pointerDown(strip, { clientX: 700, clientY: 60 });
+    await fireEvent.pointerMove(window, { clientX: 690, clientY: 60 });
+    const moved = (oncards.mock.calls.at(-1)![0] as CardState[])[0]!;
+    expect(moved.x).toBe(710);
   });
 
   it("leaves the cards alone until the page has been measured", () => {

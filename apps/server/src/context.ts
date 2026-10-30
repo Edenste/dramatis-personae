@@ -15,6 +15,8 @@ export type App = FastifyInstance<
 
 /** What the desktop app gives the server it runs in-process. */
 export interface DesktopHooks {
+  /** The folder the installer owns; deleted on uninstall, so no data folder may be inside it. */
+  installDir?: string;
   /** Which side of the title bar the window buttons sit on. */
   windowControls: "left" | "right";
   /** Shows the system folder picker; null if it was cancelled. */

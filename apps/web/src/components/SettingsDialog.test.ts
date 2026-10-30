@@ -25,15 +25,16 @@ function setup(desktop: Status["desktop"]) {
     "POST /api/restart": { status: 202 },
   });
   const onclose = vi.fn();
+  const ontheme = vi.fn();
   render(SettingsDialog, {
     api: createWebApi({ baseUrl: location.origin, fetch: server.fetch }),
     settings,
     desktop,
     version: "1.2.3",
     onclose,
-    ontheme: vi.fn(),
+    ontheme,
   });
-  return { server, onclose };
+  return { server, onclose, ontheme };
 }
 
 describe("SettingsDialog", () => {
@@ -72,6 +73,12 @@ describe("SettingsDialog", () => {
     expect(await screen.findByText("Restart the server to use the new folder.")).toBeTruthy();
     expect(server.requests.at(-1)?.body).toEqual({ dataPath: "/home/a/worlds" });
     expect(screen.queryByRole("button", { name: "Restart now" })).toBeNull();
+  });
+
+  it("tells the app which theme was chosen, so reopening shows it", async () => {
+    const { ontheme } = setup(null);
+    await fireEvent.click(screen.getByRole("radio", { name: "Dark" }));
+    expect(ontheme).toHaveBeenCalledWith("dark");
   });
 
   it("opens the data folder and shows the version", async () => {

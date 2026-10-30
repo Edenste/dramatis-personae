@@ -35,13 +35,16 @@
   const measured = $derived(bounds.width > 0 && bounds.height > 0);
   const edges: Edge[] = ["n", "s", "e", "w", "ne", "nw", "se", "sw"];
 
-  // Drop cards for characters that are gone, and keep the rest on the page.
+  /**
+   * Cards are shown inside the page, but stored where they were placed: a smaller
+   * window (the desktop app always opens at one size) must not move them for good.
+   */
+  const shown = $derived(measured ? cards.map((card) => clampCard(card, bounds)) : cards);
+
+  // Drop cards for characters that are gone.
   $effect(() => {
-    if (!measured) return;
-    const kept = cards
-      .filter((card) => characterById(state, card.character) !== null)
-      .map((card) => clampCard(card, bounds));
-    if (JSON.stringify(kept) !== JSON.stringify(cards)) oncards(kept);
+    const kept = cards.filter((card) => characterById(state, card.character) !== null);
+    if (kept.length !== cards.length) oncards(kept);
   });
 
   /** Follows the pointer until it's released, turning each position into a new card state. */
@@ -50,7 +53,7 @@
     character: string,
     change: (start: CardState, dx: number, dy: number) => CardState,
   ): void {
-    const start = cards.find((c) => c.character === character);
+    const start = shown.find((c) => c.character === character);
     if (!start) return;
     event.preventDefault();
     const [x0, y0] = [event.clientX, event.clientY];
@@ -73,7 +76,7 @@
 
 <div class="layer">
   <!-- The front card is first in the document, so keyboard focus moves front to back. -->
-  {#each [...cards].reverse() as card, index (card.character)}
+  {#each [...shown].reverse() as card, index (card.character)}
     {@const summary = characterById(state, card.character)}
     {#if summary}
       {@const z = cards.length - index}

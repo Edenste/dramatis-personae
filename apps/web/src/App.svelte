@@ -51,6 +51,8 @@
   let dialog = $state<"new" | "rename" | null>(null);
   let booted = $state(false);
   let routing = 0;
+  /** Numbers world openings; a slower, older one closes itself instead of taking over. */
+  let opening = 0;
 
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
   const platform = navigator.platform.startsWith("Mac") ? "mac" : "other";
@@ -137,6 +139,7 @@
 
   async function openWorld(id: string): Promise<void> {
     if (connection?.worldId === id) return;
+    const ticket = ++opening;
     closeWorld();
     const next = new WorldConnection(id, {
       api,
@@ -145,7 +148,16 @@
       ...(socket ? { socket } : {}),
     });
     const nextWorkspace = new WorkspaceState(id, { api });
-    await Promise.all([next.open(), nextWorkspace.load()]);
+    try {
+      await Promise.all([next.open(), nextWorkspace.load()]);
+    } catch (error) {
+      next.close();
+      throw error;
+    }
+    if (ticket !== opening) {
+      next.close();
+      return;
+    }
     connection = next;
     workspace = nextWorkspace;
     phase = "world";
@@ -171,7 +183,7 @@
   async function switchWorld(id: string): Promise<void> {
     try {
       await openWorld(id);
-      if (workspace) navigate(locationFor(id, workspace.active));
+      if (workspace && connection?.worldId === id) navigate(locationFor(id, workspace.active));
     } catch (error) {
       report(error);
     }
@@ -351,7 +363,10 @@
     desktop={status?.desktop ?? null}
     version={status?.version ?? ""}
     onclose={() => (settingsOpen = false)}
-    ontheme={(next: Theme) => (theme = next)}
+    ontheme={(next: Theme) => {
+      theme = next;
+      if (settings) settings = { ...settings, theme: next };
+    }}
   />
 {/if}
 
