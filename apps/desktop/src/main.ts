@@ -9,6 +9,7 @@ import { BrowserWindow, app, dialog, nativeTheme, session, shell } from "electro
 import squirrelStartup from "electron-squirrel-startup";
 import { startServer, type RunningServer } from "@dramatis-personae/server";
 import { createDesktopHooks, themeWindow } from "./hooks.ts";
+import { selfTestImages } from "./self-test.ts";
 import { shutDown } from "./shutdown.ts";
 import { mainWindowOptions, revealWindow } from "./window-options.ts";
 import { externalUrlToOpen, isAppUrl } from "./window-security.ts";
@@ -62,8 +63,20 @@ async function launch(): Promise<void> {
   themeWindow(window);
 }
 
-// Squirrel runs the app with install, update and uninstall flags; handle them and leave.
-if (squirrelStartup || !app.requestSingleInstanceLock()) {
+if (process.argv.includes("--self-test-images")) {
+  // A check for packaged builds: no window, no server, just the image library.
+  selfTestImages().then(
+    (message) => {
+      console.log(message);
+      app.exit(0);
+    },
+    (error: unknown) => {
+      console.error(error);
+      app.exit(1);
+    },
+  );
+} else if (squirrelStartup || !app.requestSingleInstanceLock()) {
+  // Squirrel runs the app with install, update and uninstall flags; handle them and leave.
   app.quit();
 } else {
   // A second launch, or a click on the macOS Dock icon, shows the window,
