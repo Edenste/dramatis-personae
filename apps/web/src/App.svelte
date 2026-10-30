@@ -3,6 +3,7 @@
   import { onMount, untrack } from "svelte";
   import { fade } from "svelte/transition";
   import type {
+    CardState,
     FixRequest,
     Settings,
     Status,
@@ -29,7 +30,10 @@
   import { characterById, worldName } from "./lib/world-mirror.ts";
   import { WorkspaceState } from "./lib/workspace.svelte.ts";
   import DataRootProblem from "./pages/DataRootProblem.svelte";
+  import CharacterPage from "./pages/CharacterPage.svelte";
+  import DashboardPage from "./pages/DashboardPage.svelte";
   import FirstRun from "./pages/FirstRun.svelte";
+  import GraphPage from "./pages/GraphPage.svelte";
   import ProblemsPage from "./pages/ProblemsPage.svelte";
   import WorldUnavailable from "./pages/WorldUnavailable.svelte";
 
@@ -199,6 +203,16 @@
     navigate(locationFor(connection.worldId, next), { replace: true });
   }
 
+  function renameCharacter(id: string, name: string): void {
+    void connection?.run({
+      commands: [{ type: "character.update", id, set: { name } }],
+    });
+  }
+
+  function openCharacterTab(id: string): void {
+    selectTab(`character/${id}`);
+  }
+
   async function openDataFolder(): Promise<void> {
     try {
       unwrap(await api.POST("/api/data-folder/open"));
@@ -285,19 +299,43 @@
             ondiscard={() => void connection?.discardUnsaved()}
           />
           <div class="tab-area">
-            {#key workspace.active}
-              <section class="tab-page" in:fade={{ duration: 120 }}>
-                {#if workspace.active === "problems"}
-                  <ProblemsPage
-                    worldName={currentName}
-                    problems={connection.state?.problems ?? []}
-                    onfix={(request: FixRequest) => void connection?.fix(request)}
-                  />
-                {:else}
-                  <p class="placeholder">{label(workspace.active)}</p>
-                {/if}
-              </section>
-            {/key}
+            {#if connection.state}
+              <!-- The graph stays mounted while another tab shows, so it keeps its place. -->
+              <div class="graph-host" hidden={workspace.active !== "graph"}>
+                <GraphPage
+                  world={connection.state}
+                  active={workspace.active === "graph"}
+                  cards={workspace.cards.graph ?? []}
+                  oncards={(cards: CardState[]) => workspace?.setCards("graph", cards)}
+                  onopentab={openCharacterTab}
+                  onrename={renameCharacter}
+                />
+              </div>
+              {#if workspace.active !== "graph"}
+                {#key workspace.active}
+                  <section class="tab-page" in:fade={{ duration: 120 }}>
+                    {#if workspace.active === "problems"}
+                      <ProblemsPage
+                        worldName={currentName}
+                        problems={connection.state.problems}
+                        onfix={(request: FixRequest) => void connection?.fix(request)}
+                      />
+                    {:else if workspace.active === "dashboard"}
+                      <DashboardPage
+                        state={connection.state}
+                        recent={workspace.recent}
+                        onopen={openCharacterTab}
+                      />
+                    {:else}
+                      <CharacterPage
+                        state={connection.state}
+                        id={workspace.active.slice("character/".length)}
+                      />
+                    {/if}
+                  </section>
+                {/key}
+              {/if}
+            {/if}
           </div>
         </div>
       {/if}
@@ -349,24 +387,37 @@
   }
 
   .world {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    height: 100%;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .tab-area {
     position: relative;
+    flex: 1;
     min-height: 0;
+  }
+
+  .graph-host {
+    position: absolute;
+    inset: 0;
+    animation: show var(--motion-tab) ease-out;
+  }
+
+  .graph-host[hidden] {
+    display: none;
+  }
+
+  @keyframes show {
+    from {
+      opacity: 0;
+    }
   }
 
   .tab-page {
     position: absolute;
     inset: 0;
     overflow: auto;
-  }
-
-  .placeholder {
-    margin: var(--space-5);
-    color: var(--color-text-secondary);
   }
 </style>

@@ -31,3 +31,12 @@ if (!Element.prototype.animate) {
     return animation as unknown as Animation;
   };
 }
+
+// jsdom has no ResizeObserver; measuring is left to the component's first synchronous read.
+if (typeof ResizeObserver === "undefined") {
+  globalThis.ResizeObserver = class {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  };
+}
