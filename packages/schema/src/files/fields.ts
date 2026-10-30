@@ -24,6 +24,8 @@ export const FieldDefinitionSchema = z
     section: z.string().optional(),
     default: z.boolean(),
     options: z.array(z.string()).optional(),
+    /** The fixed unit a measurement field's values are in. */
+    unit: z.string().optional(),
     calendar: z
       .looseObject({ show: z.boolean(), color: ColourSchema.nullable(), title: z.string() })
       .optional(),
@@ -40,6 +42,13 @@ export const FieldDefinitionSchema = z
         message: "only select fields have options",
       });
     }
+    if (field.type !== "measurement" && field.unit !== undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["unit"],
+        message: "only measurement fields have a unit",
+      });
+    }
     if (field.type !== "date" && field.calendar !== undefined) {
       ctx.addIssue({
         code: "custom",
@@ -52,6 +61,8 @@ export type FieldDefinition = z.infer<typeof FieldDefinitionSchema>;
 
 export const FieldsFileSchema = z.looseObject({
   ...fileBase,
+  /** Key of the field shown under a character's name, if any. */
+  subtitle: z.string().nullable().default(null),
   fields: z.array(FieldDefinitionSchema),
 });
 export type FieldsFile = z.infer<typeof FieldsFileSchema>;
@@ -73,6 +84,6 @@ export function fieldValueSchema(type: FieldType): z.ZodType {
     case "character":
       return IdSchema;
     case "measurement":
-      return z.object({ value: z.number(), unit: z.string().min(1) });
+      return z.object({ value: z.number(), unit: z.string() });
   }
 }

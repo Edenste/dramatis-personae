@@ -5,6 +5,13 @@
     "$schema": {
       "type": "string"
     },
+    "subtitle": {
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "fields": {
       "type": "array",
       "items": {
@@ -42,6 +49,9 @@
             "items": {
               "type": "string"
             }
+          },
+          "unit": {
+            "type": "string"
           },
           "calendar": {
             "type": "object",

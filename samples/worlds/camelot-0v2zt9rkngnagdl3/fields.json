@@ -1,5 +1,6 @@
 {
   "$schema": "./schemas/fields.schema.json",
+  "subtitle": "title",
   "fields": [
     {
       "key": "birthday",

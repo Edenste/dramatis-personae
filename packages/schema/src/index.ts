@@ -8,3 +8,5 @@ export * from "./commands.ts";
 export * from "./config.ts";
 export * from "./api.ts";
 export * from "./colour.ts";
+export * from "./shown-fields.ts";
+export * from "./field-keys.ts";
