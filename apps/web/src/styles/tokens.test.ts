@@ -28,9 +28,9 @@ describe.each(Object.entries(themes))("the %s tokens", (_name, c) => {
     ["text-secondary", "page", c["text-secondary"]!, c.page!],
     ["text-secondary", "frame", c["text-secondary"]!, c.frame!],
     ["text-secondary", "surface", c["text-secondary"]!, c.surface!],
-    ["white", "accent", "#ffffff", c.accent!],
+    ["on-accent", "accent", c["on-accent"]!, c.accent!],
     ["danger", "page", c.danger!, c.page!],
-    ["badge text", "warning", "#1d1d1f", c.warning!],
+    ["on-warning", "warning", c["on-warning"]!, c.warning!],
     ["page (toasts)", "text", c.page!, c.text!],
   ];
 

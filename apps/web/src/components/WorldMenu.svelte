@@ -123,7 +123,7 @@
   .item:hover:not(:disabled),
   .item.current {
     background: var(--color-accent);
-    color: #ffffff;
+    color: var(--color-on-accent);
   }
 
   .item:disabled {

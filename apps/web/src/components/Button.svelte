@@ -28,7 +28,7 @@
 
   .primary {
     background: var(--color-accent);
-    color: #ffffff;
+    color: var(--color-on-accent);
   }
 
   .primary:hover:not(:disabled) {
@@ -54,6 +54,6 @@
 
   .primary:disabled {
     opacity: 0.5;
-    color: #ffffff;
+    color: var(--color-on-accent);
   }
 </style>
