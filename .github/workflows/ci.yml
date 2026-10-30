@@ -31,3 +31,33 @@ jobs:
       - run: pnpm format:check
       - run: pnpm check:boundaries
       - run: pnpm test
+
+  e2e:
+    name: e2e (${{ matrix.os }})
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      # Linux runs the browser tests only; Windows also drives the desktop app.
+      E2E_SKIP_ELECTRON: ${{ matrix.os == 'ubuntu-latest' && '1' || '' }}
+      ELECTRON_SKIP_BINARY_DOWNLOAD: ${{ matrix.os == 'ubuntu-latest' && '1' || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @dramatis-personae/desktop exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - name: Keep the test report when a test fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-${{ matrix.os }}
+          path: apps/desktop/playwright-report
+          retention-days: 7
